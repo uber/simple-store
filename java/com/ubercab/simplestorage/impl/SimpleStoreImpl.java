@@ -30,7 +30,7 @@ final class SimpleStoreImpl implements SimpleStore {
 
     // Only touch from the serial executor.
     private final Map<String, byte[]> cache = new HashMap<>();
-    private final Executor orderedIoExecutor = new SerialExecutor(SimpleStoreConfig.getIOExecutor());
+    private final TaggedSerialExecutor orderedIoExecutor = new TaggedSerialExecutor(SimpleStoreConfig.getIOExecutor());
 
     SimpleStoreImpl(Context appContext, String scope, ScopeConfig config) {
         this.context = appContext;
@@ -63,7 +63,8 @@ final class SimpleStoreImpl implements SimpleStore {
 
     @Override
     public void get(String key, Callback<byte[]> cb, Executor executor) {
-        orderedIoExecutor.execute(() -> {
+        requireOpen();
+        orderedIoExecutor.execute("read", () -> {
             byte[] value;
             if (cache.containsKey(key)) {
                 value = cache.get(key);
@@ -85,21 +86,31 @@ final class SimpleStoreImpl implements SimpleStore {
     }
 
     @Override
-    public void put(String key, byte[] value, Callback<byte[]> cb, Executor executor) {
-        orderedIoExecutor.execute(() -> {
-            cache.put(key, value);
-            try {
-                writeFile(key, value);
-            } catch (IOException | InterruptedException e) {
-                executor.execute(() -> cb.onError(e));
-                return;
+    public void put(String key, @Nullable byte[] value, Callback<byte[]> cb, Executor executor) {
+        requireOpen();
+        orderedIoExecutor.execute("write", () -> {
+            if (value == null) {
+                cache.remove(key);
+                deleteFile(key);
+            } else {
+                cache.put(key, value);
+                try {
+                    writeFile(key, value);
+                    if (!isClosed()) {
+                        executor.execute(() -> cb.onSuccess(value));
+                    }
+                } catch (IOException e) {
+                    if (!isClosed()) {
+                        executor.execute(() -> cb.onError(e));
+                    }
+                }
             }
-            executor.execute(() -> cb.onSuccess(value));
         });
     }
 
     @Override
     public void deleteAll(Callback<Void> cb, Executor executor) {
+        requireOpen();
         orderedIoExecutor.execute(() -> {
             try {
                 File[] files = scopedDirectory.listFiles(File::isFile);
@@ -124,6 +135,7 @@ final class SimpleStoreImpl implements SimpleStore {
         synchronized (closedLock) {
             closed = true;
         }
+        orderedIoExecutor.cancel("read");
         orderedIoExecutor.execute(() -> {
             synchronized (closedLock) {
                 if (closed) {
@@ -139,10 +151,22 @@ final class SimpleStoreImpl implements SimpleStore {
         }
     }
 
+    private void requireOpen() {
+        if (isClosed()) {
+            throw new IllegalStateException("store is closed");
+        }
+    }
+
     void open() {
         synchronized (closedLock) {
             closed = false;
         }
+    }
+
+    private void deleteFile(String key) {
+        File baseFile = new File(scopedDirectory, key);
+        AtomicFile file = new AtomicFile(baseFile);
+        file.delete();
     }
 
     private byte[] readFile(String key) throws IOException {
@@ -155,12 +179,11 @@ final class SimpleStoreImpl implements SimpleStore {
         }
     }
 
-    private void writeFile(String key, byte[] value) throws IOException, InterruptedException {
+    private void writeFile(String key, byte[] value) throws IOException {
         File baseFile = new File(scopedDirectory, key);
         AtomicFile file = new AtomicFile(baseFile);
         FileOutputStream writer = file.startWrite();
         writer.write(value);
-        Thread.sleep(5000);
         file.finishWrite(writer);
     }
 

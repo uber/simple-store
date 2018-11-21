@@ -1,0 +1,33 @@
+syntax = "proto2";
+
+package simplestorage;
+
+option java_package = "com.ubercab.simplestorage";
+option java_outer_classname = "PrimitiveStorage";
+
+message StringList {
+    repeated string string = 1;
+}
+
+message Integer {
+    required int32 integer = 1;
+}
+
+message ExperimentCache {
+    map<string, Experiment> entries = 1;
+
+    message Experiment {
+        optional string name = 1;
+        optional string id = 2;
+        optional float log_treatments = 3;
+        optional string treatment_group_name = 4;
+        optional string treatment_group_id = 5;
+        optional string segment_uuid = 6;
+        optional string segment_key = 7;
+        map<string, string> parameters = 8;
+        optional string request_uuid = 9;
+        optional string bucket_by = 10;
+        optional bool is_background_push = 11;
+    }
+}
+

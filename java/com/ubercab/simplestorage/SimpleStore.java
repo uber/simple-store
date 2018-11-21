@@ -2,6 +2,8 @@ package com.ubercab.simplestorage;
 
 import java.util.concurrent.Executor;
 
+import javax.annotation.Nullable;
+
 
 public interface SimpleStore {
 
@@ -12,14 +14,14 @@ public interface SimpleStore {
     void putString(String key, String value, Callback<String> cb, Executor executor);
 
     void get(String key, Callback<byte[]> cb, Executor executor);
-    void put(String key, byte[] value, Callback<byte[]> cb, Executor executor);
+    void put(String key, @Nullable byte[] value, Callback<byte[]> cb, Executor executor);
 
     void deleteAll(Callback<Void> cb, Executor executor);
 
     void close();
 
     interface Callback<T> {
-        void onSuccess(T msg);
+        void onSuccess(T value);
 
         void onError(Throwable t);
     }

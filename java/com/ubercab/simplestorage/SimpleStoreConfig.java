@@ -4,7 +4,7 @@ import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
 public class SimpleStoreConfig {
-    private static int threadCount = -1;
+    private static int threadCount = 0;
 
     private static Executor ioExecutor = Executors.newCachedThreadPool(r -> new Thread(r, "SimpleStoreIO-"+ threadCount++));
 

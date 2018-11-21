@@ -3,6 +3,7 @@ package com.ubercab.simplestorage.sample;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -26,6 +27,7 @@ public class MainActivity extends Activity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         scope = getIntent().getIntExtra(SCOPE_EXTRA, 0);
+        setTitle("Sample Scope "+ scope);
         textView = findViewById(R.id.activity_main_text);
         editText = findViewById(R.id.activity_main_edit);
         button = findViewById(R.id.activity_main_save);
@@ -47,15 +49,15 @@ public class MainActivity extends Activity {
                 textView.setText(t.toString());
             }
         }, getMainExecutor()));
+        initialize();
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
+    private void initialize() {
         StringBuilder nesting = new StringBuilder();
         for (int i = 0; i< scope; i++) {
             nesting.append("/nest");
         }
+        Log.e("Test", nesting.toString());
         simpleStore = SimpleStoreImplFactory.get(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
         loadMessage();
     }
@@ -96,8 +98,8 @@ public class MainActivity extends Activity {
     }
 
     @Override
-    protected void onPause() {
-        super.onPause();
+    protected void onDestroy() {
+        super.onDestroy();
         simpleStore.close();
     }
 }

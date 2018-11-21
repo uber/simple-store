@@ -30,7 +30,7 @@ public final class SimpleStoreImplFactory {
                 if (Objects.requireNonNull(store).isClosed()) {
                     store.open();
                 } else {
-                    throw new IllegalStateException("scope already open");
+                    throw new IllegalStateException("scope '"+scope+"' already open");
                 }
             } else {
                 store = new SimpleStoreImpl(appContext, scope, config);
