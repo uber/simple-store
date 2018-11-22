@@ -1,6 +1,7 @@
 package com.ubercab.simplestorage.impl;
 
 import android.content.Context;
+import javax.annotation.Nonnull;
 
 import com.ubercab.simplestorage.ScopeConfig;
 import com.ubercab.simplestorage.SimpleStore;
@@ -52,17 +53,17 @@ final class SimpleStoreImpl implements SimpleStore {
     }
 
     @Override
-    public void getString(String key, Callback<String> cb, Executor executor) {
+    public void getString(String key, @Nonnull Callback<String> cb, @Nonnull Executor executor) {
         get(key, new ByteToString(cb), executor);
     }
 
     @Override
-    public void putString(String key, String value, Callback<String> cb, Executor executor) {
+    public void putString(String key, String value, @Nonnull Callback<String> cb, @Nonnull Executor executor) {
         put(key, value.getBytes(), new ByteToString(cb), executor);
     }
 
     @Override
-    public void get(String key, Callback<byte[]> cb, Executor executor) {
+    public void get(String key, @Nonnull Callback<byte[]> cb, @Nonnull Executor executor) {
         requireOpen();
         orderedIoExecutor.execute("read", () -> {
             byte[] value;
@@ -86,7 +87,7 @@ final class SimpleStoreImpl implements SimpleStore {
     }
 
     @Override
-    public void put(String key, @Nullable byte[] value, Callback<byte[]> cb, Executor executor) {
+    public void put(String key, @Nullable byte[] value, Callback<byte[]> cb, @Nonnull Executor executor) {
         requireOpen();
         orderedIoExecutor.execute("write", () -> {
             if (value == null) {
