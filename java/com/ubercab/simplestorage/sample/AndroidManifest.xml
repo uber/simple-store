@@ -6,15 +6,6 @@
         android:allowBackup="true"
         android:supportsRtl="true"
         android:name=".SampleApplication">
-        <activity
-            android:name=".MainActivity"
-            android:label="SimpleStorage">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
     </application>
 
 </manifest>

@@ -4,12 +4,11 @@ android_binary(
     manifest = "AndroidManifest.xml",
     manifest_values = {
         "targetSdkVersion": "28",
-        "minSdkVersion": "28",
+        "minSdkVersion": "16",
     },
-    resource_files = glob(["res/**"]),
     deps = [
-        "//java/com/ubercab/simplestorage",
-        "//java/com/ubercab/simplestorage/impl",
+        "//java/com/ubercab/simplestorage/sample/java",
+        "//java/com/ubercab/simplestorage/sample/kotlin",
         "@androidsdk//com.android.support:appcompat-v7-25.0.0",
     ],
 )
