@@ -67,7 +67,7 @@ public interface SimpleStore extends Closeable {
     void deleteAll(@Nonnull Callback<Void> callback, @Nonnull Executor executor);
 
     /**
-     * Fails any outstanding operations and releases the memory cache.
+     * Fails all outstanding operations then releases the memory cache.
      */
     void close();
 

@@ -1,15 +1,17 @@
-package com.ubercab.simplestorage;
+package com.ubercab.simplestorage.utils;
+
+import com.ubercab.simplestorage.SimpleStore;
 
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
-final class BlockingResult<T> implements SimpleStore.Callback<T> {
+public final class BlockingResult<T> implements SimpleStore.Callback<T> {
     private final int timeoutSeconds;
     private T value;
     private Throwable throwable;
     private CountDownLatch latch = new CountDownLatch(1);
 
-    BlockingResult() {
+    public BlockingResult() {
         this(1);
     }
 
@@ -35,7 +37,19 @@ final class BlockingResult<T> implements SimpleStore.Callback<T> {
         latch.countDown();
     }
 
-    boolean isSuccess() {
+    public Throwable getFailure() {
+        try {
+            latch.await(timeoutSeconds, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
+        if (throwable == null) {
+            throw new IllegalStateException("succeeded");
+        }
+        return throwable;
+    }
+
+    public boolean isSuccess() {
         try {
             latch.await(timeoutSeconds, TimeUnit.SECONDS);
         } catch (InterruptedException e) {
@@ -44,7 +58,7 @@ final class BlockingResult<T> implements SimpleStore.Callback<T> {
         return throwable == null;
     }
 
-    T getSuccessful() {
+    public T getSuccessful() {
         try {
             latch.await(timeoutSeconds, TimeUnit.SECONDS);
         } catch (InterruptedException e) {

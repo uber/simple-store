@@ -1,19 +1,21 @@
 package com.ubercab.simplestorage.impl;
 
 import android.content.Context;
-import javax.annotation.Nonnull;
 
 import com.ubercab.simplestorage.ScopeConfig;
 import com.ubercab.simplestorage.SimpleStore;
 import com.ubercab.simplestorage.SimpleStoreConfig;
+import com.ubercab.simplestorage.StoreClosedException;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.concurrent.GuardedBy;
 
@@ -31,7 +33,7 @@ final class SimpleStoreImpl implements SimpleStore {
 
     // Only touch from the serial executor.
     private final Map<String, byte[]> cache = new HashMap<>();
-    private final TaggedSerialExecutor orderedIoExecutor = new TaggedSerialExecutor(SimpleStoreConfig.getIOExecutor());
+    private final SerialExecutor orderedIoExecutor = new SerialExecutor(SimpleStoreConfig.getIOExecutor());
 
     SimpleStoreImpl(Context appContext, String scope, ScopeConfig config) {
         this.context = appContext;
@@ -39,7 +41,9 @@ final class SimpleStoreImpl implements SimpleStore {
         this.config = config;
         orderedIoExecutor.execute(() -> {
             scopedDirectory = new File(context.getFilesDir().getAbsolutePath() + "/simplestore/" + scope);
-            scopedDirectory.mkdirs();});
+            //noinspection ResultOfMethodCallIgnored
+            scopedDirectory.mkdirs();
+        });
     }
 
     @Override
@@ -65,7 +69,10 @@ final class SimpleStoreImpl implements SimpleStore {
     @Override
     public void get(String key, @Nonnull Callback<byte[]> cb, @Nonnull Executor executor) {
         requireOpen();
-        orderedIoExecutor.execute("read", () -> {
+        orderedIoExecutor.execute(() -> {
+            if (failIfClosed(executor, cb)) {
+                return;
+            }
             byte[] value;
             if (cache.containsKey(key)) {
                 value = cache.get(key);
@@ -86,10 +93,14 @@ final class SimpleStoreImpl implements SimpleStore {
         });
     }
 
+
     @Override
-    public void put(String key, @Nullable byte[] value, Callback<byte[]> cb, @Nonnull Executor executor) {
+    public void put(String key, @Nullable byte[] value, @Nonnull Callback<byte[]> cb, @Nonnull Executor executor) {
         requireOpen();
-        orderedIoExecutor.execute("write", () -> {
+        orderedIoExecutor.execute(() -> {
+            if (failIfClosed(executor, cb)) {
+                return;
+            }
             if (value == null) {
                 cache.remove(key);
                 deleteFile(key);
@@ -110,17 +121,21 @@ final class SimpleStoreImpl implements SimpleStore {
     }
 
     @Override
-    public void deleteAll(Callback<Void> cb, Executor executor) {
+    public void deleteAll(@Nonnull Callback<Void> cb, @Nonnull Executor executor) {
         requireOpen();
         orderedIoExecutor.execute(() -> {
+            if (failIfClosed(executor, cb)) {
+                return;
+            }
             try {
-                File[] files = scopedDirectory.listFiles(File::isFile);
+                File[] files = Objects.requireNonNull(scopedDirectory).listFiles(File::isFile);
                 if (files != null && files.length > 0) {
                     for (File f : files) {
                         //noinspection ResultOfMethodCallIgnored
                         f.delete();
                     }
                 }
+                //noinspection ResultOfMethodCallIgnored
                 scopedDirectory.delete();
                 cache.clear();
             } catch (Exception e) {
@@ -136,7 +151,6 @@ final class SimpleStoreImpl implements SimpleStore {
         synchronized (closedLock) {
             closed = true;
         }
-        orderedIoExecutor.cancel("read");
         orderedIoExecutor.execute(() -> {
             synchronized (closedLock) {
                 if (closed) {
@@ -154,7 +168,7 @@ final class SimpleStoreImpl implements SimpleStore {
 
     private void requireOpen() {
         if (isClosed()) {
-            throw new IllegalStateException("store is closed");
+            throw new StoreClosedException();
         }
     }
 
@@ -162,6 +176,14 @@ final class SimpleStoreImpl implements SimpleStore {
         synchronized (closedLock) {
             closed = false;
         }
+    }
+
+    private boolean failIfClosed(Executor executor, Callback<?> callback) {
+        if (isClosed()) {
+            executor.execute(() -> callback.onError(new StoreClosedException()));
+            return true;
+        }
+        return false;
     }
 
     private void deleteFile(String key) {
