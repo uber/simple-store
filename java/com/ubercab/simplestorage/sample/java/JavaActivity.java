@@ -1,4 +1,4 @@
-package com.ubercab.simplestorage.sample;
+package com.ubercab.simplestorage.sample.java;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,8 +12,9 @@ import com.ubercab.simplestorage.impl.SimpleStoreImplFactory;
 import com.ubercab.simplestorage.ScopeConfig;
 import com.ubercab.simplestorage.SimpleStore;
 
+import static com.ubercab.simplestorage.executors.StorageExecutors.mainExecutor;
 
-public class MainActivity extends Activity {
+public class JavaActivity extends Activity {
 
     private static final String SCOPE_EXTRA = "scope";
     private TextView textView;
@@ -25,7 +26,7 @@ public class MainActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_java);
         scope = getIntent().getIntExtra(SCOPE_EXTRA, 0);
         setTitle("Sample Scope "+ scope);
         textView = findViewById(R.id.activity_main_text);
@@ -33,7 +34,7 @@ public class MainActivity extends Activity {
         button = findViewById(R.id.activity_main_save);
         button.setOnClickListener((v) -> saveMessage());
         findViewById(R.id.activity_main_nest).setOnClickListener((v) -> {
-            Intent intent = new Intent(this, MainActivity.class);
+            Intent intent = new Intent(this, JavaActivity.class);
             intent.putExtra(SCOPE_EXTRA, scope + 1);
             startActivity(intent);
         });
@@ -48,7 +49,7 @@ public class MainActivity extends Activity {
             public void onError(Throwable t) {
                 textView.setText(t.toString());
             }
-        }, getMainExecutor()));
+        }, mainExecutor()));
         initialize();
     }
 
@@ -80,7 +81,7 @@ public class MainActivity extends Activity {
                 button.setEnabled(true);
                 editText.setEnabled(true);
             }
-        }, getMainExecutor());
+        }, mainExecutor());
     }
 
     private void loadMessage() {
@@ -94,7 +95,7 @@ public class MainActivity extends Activity {
             public void onError(Throwable t) {
                 textView.setText(t.toString());
             }
-        }, getMainExecutor());
+        }, mainExecutor());
     }
 
     @Override

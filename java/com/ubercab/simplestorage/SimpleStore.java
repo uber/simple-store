@@ -12,20 +12,6 @@ import javax.annotation.Nullable;
 public interface SimpleStore extends Closeable {
 
     /**
-     * Enter a nested scope.
-     *
-     * @param name of scope to enter
-     * @param config to apply
-     * @return store for nested scope
-     */
-    SimpleStore scope(String name, ScopeConfig config);
-
-    /**
-     * Convenience method for #{@link #scope(String, ScopeConfig)} with #{@link ScopeConfig#DEFAULT}
-     */
-    SimpleStore scope(String name);
-
-    /**
      * Retrieve a byte[]-backed String.
      * @param key to fetch from
      * @param callback receives parsed String
@@ -67,7 +53,7 @@ public interface SimpleStore extends Closeable {
     void deleteAll(@Nonnull Callback<Void> callback, @Nonnull Executor executor);
 
     /**
-     * Fails any outstanding operations and releases the memory cache.
+     * Fails all outstanding operations then releases the memory cache.
      */
     void close();
 

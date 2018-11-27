@@ -1,21 +1,23 @@
 package com.ubercab.simplestorage.impl;
 
 import android.content.Context;
-import javax.annotation.Nonnull;
 
 import com.ubercab.simplestorage.ScopeConfig;
 import com.ubercab.simplestorage.SimpleStore;
 import com.ubercab.simplestorage.SimpleStoreConfig;
+import com.ubercab.simplestorage.StoreClosedException;
 
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 final class SimpleStoreImpl implements SimpleStore {
 
@@ -25,13 +27,12 @@ final class SimpleStoreImpl implements SimpleStore {
     @Nullable
     private File scopedDirectory;
 
-    private final Object closedLock = new Object();
-    @GuardedBy("closedLock")
-    private boolean closed = false;
+    // 0 = open, 1 = closed, 2 = tombstoned
+    AtomicInteger available = new AtomicInteger();
 
     // Only touch from the serial executor.
     private final Map<String, byte[]> cache = new HashMap<>();
-    private final TaggedSerialExecutor orderedIoExecutor = new TaggedSerialExecutor(SimpleStoreConfig.getIOExecutor());
+    private final SerialExecutor orderedIoExecutor = new SerialExecutor(SimpleStoreConfig.getIOExecutor());
 
     SimpleStoreImpl(Context appContext, String scope, ScopeConfig config) {
         this.context = appContext;
@@ -39,17 +40,9 @@ final class SimpleStoreImpl implements SimpleStore {
         this.config = config;
         orderedIoExecutor.execute(() -> {
             scopedDirectory = new File(context.getFilesDir().getAbsolutePath() + "/simplestore/" + scope);
-            scopedDirectory.mkdirs();});
-    }
-
-    @Override
-    public SimpleStore scope(String name) {
-        return scope(name, config);
-    }
-
-    @Override
-    public SimpleStore scope(String name, ScopeConfig config) {
-        return new SimpleStoreImpl(context, scope + "/" + name, config);
+            //noinspection ResultOfMethodCallIgnored
+            scopedDirectory.mkdirs();
+        });
     }
 
     @Override
@@ -65,7 +58,10 @@ final class SimpleStoreImpl implements SimpleStore {
     @Override
     public void get(String key, @Nonnull Callback<byte[]> cb, @Nonnull Executor executor) {
         requireOpen();
-        orderedIoExecutor.execute("read", () -> {
+        orderedIoExecutor.execute(() -> {
+            if (failIfClosed(executor, cb)) {
+                return;
+            }
             byte[] value;
             if (cache.containsKey(key)) {
                 value = cache.get(key);
@@ -86,10 +82,14 @@ final class SimpleStoreImpl implements SimpleStore {
         });
     }
 
+
     @Override
-    public void put(String key, @Nullable byte[] value, Callback<byte[]> cb, @Nonnull Executor executor) {
+    public void put(String key, @Nullable byte[] value, @Nonnull Callback<byte[]> cb, @Nonnull Executor executor) {
         requireOpen();
-        orderedIoExecutor.execute("write", () -> {
+        orderedIoExecutor.execute(() -> {
+            if (failIfClosed(executor, cb)) {
+                return;
+            }
             if (value == null) {
                 cache.remove(key);
                 deleteFile(key);
@@ -97,30 +97,30 @@ final class SimpleStoreImpl implements SimpleStore {
                 cache.put(key, value);
                 try {
                     writeFile(key, value);
-                    if (!isClosed()) {
-                        executor.execute(() -> cb.onSuccess(value));
-                    }
+                    executor.execute(() -> cb.onSuccess(value));
                 } catch (IOException e) {
-                    if (!isClosed()) {
-                        executor.execute(() -> cb.onError(e));
-                    }
+                    executor.execute(() -> cb.onError(e));
                 }
             }
         });
     }
 
     @Override
-    public void deleteAll(Callback<Void> cb, Executor executor) {
+    public void deleteAll(@Nonnull Callback<Void> cb, @Nonnull Executor executor) {
         requireOpen();
         orderedIoExecutor.execute(() -> {
+            if (failIfClosed(executor, cb)) {
+                return;
+            }
             try {
-                File[] files = scopedDirectory.listFiles(File::isFile);
+                File[] files = Objects.requireNonNull(scopedDirectory).listFiles(File::isFile);
                 if (files != null && files.length > 0) {
                     for (File f : files) {
                         //noinspection ResultOfMethodCallIgnored
                         f.delete();
                     }
                 }
+                //noinspection ResultOfMethodCallIgnored
                 scopedDirectory.delete();
                 cache.clear();
             } catch (Exception e) {
@@ -133,35 +133,35 @@ final class SimpleStoreImpl implements SimpleStore {
 
     @Override
     public void close() {
-        synchronized (closedLock) {
-            closed = true;
-        }
-        orderedIoExecutor.cancel("read");
-        orderedIoExecutor.execute(() -> {
-            synchronized (closedLock) {
-                if (closed) {
-                    SimpleStoreImplFactory.tombstone(scope);
-                }
-            }
-        });
-    }
-
-    boolean isClosed() {
-        synchronized (closedLock) {
-            return closed;
+        if (available.compareAndSet(0, 1)) {
+            orderedIoExecutor.execute(() -> SimpleStoreImplFactory.tombstone(SimpleStoreImpl.this));
         }
     }
 
     private void requireOpen() {
-        if (isClosed()) {
-            throw new IllegalStateException("store is closed");
+        if (available.get() > 0) {
+            throw new StoreClosedException();
         }
     }
 
-    void open() {
-        synchronized (closedLock) {
-            closed = false;
+    boolean tombstone() {
+        return available.compareAndSet(1, 2);
+    }
+
+    String getScope() {
+        return scope;
+    }
+
+    boolean openIfClosed() {
+        return available.compareAndSet(1, 0);
+    }
+
+    private boolean failIfClosed(Executor executor, Callback<?> callback) {
+        if (available.get() > 0) {
+            executor.execute(() -> callback.onError(new StoreClosedException()));
+            return true;
         }
+        return false;
     }
 
     private void deleteFile(String key) {
