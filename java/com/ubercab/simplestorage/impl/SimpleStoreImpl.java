@@ -14,10 +14,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import javax.annotation.concurrent.GuardedBy;
 
 final class SimpleStoreImpl implements SimpleStore {
 
@@ -27,9 +27,8 @@ final class SimpleStoreImpl implements SimpleStore {
     @Nullable
     private File scopedDirectory;
 
-    private final Object closedLock = new Object();
-    @GuardedBy("closedLock")
-    private boolean closed = false;
+    // 0 = open, 1 = closed, 2 = tombstoned
+    AtomicInteger available = new AtomicInteger();
 
     // Only touch from the serial executor.
     private final Map<String, byte[]> cache = new HashMap<>();
@@ -44,16 +43,6 @@ final class SimpleStoreImpl implements SimpleStore {
             //noinspection ResultOfMethodCallIgnored
             scopedDirectory.mkdirs();
         });
-    }
-
-    @Override
-    public SimpleStore scope(String name) {
-        return scope(name, config);
-    }
-
-    @Override
-    public SimpleStore scope(String name, ScopeConfig config) {
-        return new SimpleStoreImpl(context, scope + "/" + name, config);
     }
 
     @Override
@@ -108,13 +97,9 @@ final class SimpleStoreImpl implements SimpleStore {
                 cache.put(key, value);
                 try {
                     writeFile(key, value);
-                    if (!isClosed()) {
-                        executor.execute(() -> cb.onSuccess(value));
-                    }
+                    executor.execute(() -> cb.onSuccess(value));
                 } catch (IOException e) {
-                    if (!isClosed()) {
-                        executor.execute(() -> cb.onError(e));
-                    }
+                    executor.execute(() -> cb.onError(e));
                 }
             }
         });
@@ -148,38 +133,31 @@ final class SimpleStoreImpl implements SimpleStore {
 
     @Override
     public void close() {
-        synchronized (closedLock) {
-            closed = true;
-        }
-        orderedIoExecutor.execute(() -> {
-            synchronized (closedLock) {
-                if (closed) {
-                    SimpleStoreImplFactory.tombstone(scope);
-                }
-            }
-        });
-    }
-
-    boolean isClosed() {
-        synchronized (closedLock) {
-            return closed;
+        if (available.compareAndSet(0, 1)) {
+            orderedIoExecutor.execute(() -> SimpleStoreImplFactory.tombstone(SimpleStoreImpl.this));
         }
     }
 
     private void requireOpen() {
-        if (isClosed()) {
+        if (available.get() > 0) {
             throw new StoreClosedException();
         }
     }
 
-    void open() {
-        synchronized (closedLock) {
-            closed = false;
-        }
+    boolean tombstone() {
+        return available.compareAndSet(1, 2);
+    }
+
+    String getScope() {
+        return scope;
+    }
+
+    boolean openIfClosed() {
+        return available.compareAndSet(1, 0);
     }
 
     private boolean failIfClosed(Executor executor, Callback<?> callback) {
-        if (isClosed()) {
+        if (available.get() > 0) {
             executor.execute(() -> callback.onError(new StoreClosedException()));
             return true;
         }

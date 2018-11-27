@@ -8,6 +8,7 @@ import com.ubercab.simplestorage.SimpleStore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+
 import javax.annotation.concurrent.GuardedBy;
 
 public final class SimpleStoreImplFactory {
@@ -27,10 +28,8 @@ public final class SimpleStoreImplFactory {
         synchronized (scopesLock) {
             if (scopes.containsKey(scope)) {
                 store = scopes.get(scope);
-                if (Objects.requireNonNull(store).isClosed()) {
-                    store.open();
-                } else {
-                    throw new IllegalStateException("scope '"+scope+"' already open");
+                if (!Objects.requireNonNull(store).openIfClosed()) {
+                    throw new IllegalStateException("scope '" + scope + "' already open");
                 }
             } else {
                 store = new SimpleStoreImpl(appContext, scope, config);
@@ -40,9 +39,21 @@ public final class SimpleStoreImplFactory {
         return store;
     }
 
-    static void tombstone(String scope) {
+    static void tombstone(SimpleStoreImpl store) {
         synchronized (scopesLock) {
-            scopes.remove(scope);
+            if (store.tombstone()) {
+                scopes.remove(store.getScope());
+            }
+        }
+    }
+
+    static void crashIfAnyOpen() {
+        synchronized (scopesLock) {
+            for (Map.Entry<String, SimpleStoreImpl> e : scopes.entrySet()) {
+                if (e.getValue().available.get() == 0) {
+                    throw new IllegalStateException("Leaked scope " + e.getKey());
+                }
+            }
         }
     }
 }
