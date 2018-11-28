@@ -36,7 +36,7 @@ public final class SimpleStoreImplTest {
 
     @Test
     public void nullWhenMissing() {
-        try(SimpleStore store = SimpleStoreImplFactory.get(context)) {
+        try(SimpleStore store = SimpleStoreImplFactory.create(context)) {
             BlockingResult<byte[]> missing = new BlockingResult<>();
             store.get(TEST_KEY, missing, directExecutor());
             assertTrue(missing.isSuccess());
@@ -46,7 +46,7 @@ public final class SimpleStoreImplTest {
 
     @Test
     public void puttingNullDeletesKey() {
-        try(SimpleStore store = SimpleStoreImplFactory.get(context)) {
+        try(SimpleStore store = SimpleStoreImplFactory.create(context)) {
             BlockingResult<byte[]> saved = new BlockingResult<>();
             store.put(TEST_KEY, new byte[1], saved, directExecutor());
             saved.getSuccessful();
@@ -58,7 +58,7 @@ public final class SimpleStoreImplTest {
 
     @Test
     public void deleteAll() {
-        try(SimpleStore store = SimpleStoreImplFactory.get(context)) {
+        try(SimpleStore store = SimpleStoreImplFactory.create(context)) {
             BlockingResult<byte[]> saved = new BlockingResult<>();
             store.put(TEST_KEY, new byte[1], saved, directExecutor());
             saved.getSuccessful();
@@ -78,7 +78,7 @@ public final class SimpleStoreImplTest {
         BlockingResult<byte[]> savedSuccess = new BlockingResult<>();
         BlockingResult<byte[]> write = new BlockingResult<>();
         BlockingResult<byte[]> read = new BlockingResult<>();
-        try(SimpleStore store = SimpleStoreImplFactory.get(context)) {
+        try(SimpleStore store = SimpleStoreImplFactory.create(context)) {
             store.put(TEST_KEY, new byte[1], savedSuccess, directExecutor());
             manualExecutor.flush();
             store.put(TEST_KEY, new byte[1], write, directExecutor());
@@ -92,7 +92,7 @@ public final class SimpleStoreImplTest {
 
     @Test
     public void closes() {
-        SimpleStore store = SimpleStoreImplFactory.get(context);
+        SimpleStore store = SimpleStoreImplFactory.create(context);
         store.close();
     }
 
@@ -100,13 +100,13 @@ public final class SimpleStoreImplTest {
     public void scopes() {
         String someScope = "bar";
         String value = "some value";
-        try(SimpleStore scopedBase = SimpleStoreImplFactory.get(context, someScope, ScopeConfig.DEFAULT)) {
+        try(SimpleStore scopedBase = SimpleStoreImplFactory.create(context, someScope, ScopeConfig.DEFAULT)) {
             BlockingResult<String> savedSuccess = new BlockingResult<>();
             scopedBase.putString("foo", value, savedSuccess, directExecutor());
             savedSuccess.getSuccessful();
         }
 
-        try(SimpleStore scopedFactory = SimpleStoreImplFactory.get(context, someScope, ScopeConfig.DEFAULT)) {
+        try(SimpleStore scopedFactory = SimpleStoreImplFactory.create(context, someScope, ScopeConfig.DEFAULT)) {
             BlockingResult<String> read = new BlockingResult<>();
             scopedFactory.getString("foo", read, directExecutor());
             assertEquals(value, read.getSuccessful());
@@ -116,10 +116,10 @@ public final class SimpleStoreImplTest {
     @Test
     public void oneInstancePerScope() {
         String someScope = "foo";
-        try(SimpleStore ignoredOuter = SimpleStoreImplFactory.get(context)) {
-            try(SimpleStore ignored = SimpleStoreImplFactory.get(context, someScope, ScopeConfig.DEFAULT)) {
+        try(SimpleStore ignoredOuter = SimpleStoreImplFactory.create(context)) {
+            try(SimpleStore ignored = SimpleStoreImplFactory.create(context, someScope, ScopeConfig.DEFAULT)) {
                 try {
-                    SimpleStoreImplFactory.get(context, someScope, ScopeConfig.DEFAULT);
+                    SimpleStoreImplFactory.create(context, someScope, ScopeConfig.DEFAULT);
                     fail();
                 } catch (IllegalStateException e) {
                     // expected.

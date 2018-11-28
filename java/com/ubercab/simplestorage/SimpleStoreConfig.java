@@ -1,25 +1,46 @@
 package com.ubercab.simplestorage;
 
+import com.ubercab.simplestorage.executors.StorageExecutors;
+
 import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import javax.annotation.Nullable;
 
-public class SimpleStoreConfig {
-    private static int threadCount = 0;
-    private static final Executor DEFAULT_IO_EXECUTOR = Executors.newCachedThreadPool(r -> new Thread(r, "SimpleStoreIO-"+ threadCount++));
+public final class SimpleStoreConfig {
 
     @Nullable
     private static Executor ioExecutor;
 
+    @Nullable
+    private static Executor computationExecutor;
+
     public static Executor getIOExecutor() {
         if (ioExecutor == null) {
-            ioExecutor = DEFAULT_IO_EXECUTOR;
+            ioExecutor = StorageExecutors.ioExecutor();
         }
         return ioExecutor;
     }
 
-    public static void setIOExecutor(Executor executor) {
+    /**
+     * Override the executor used for IO operations.
+     * @param executor to set, null unsets.
+     */
+    public static void setIOExecutor(@Nullable Executor executor) {
         ioExecutor = executor;
+    }
+
+    public static Executor getComputationExecutor() {
+        if (computationExecutor == null) {
+            computationExecutor = StorageExecutors.computationExecutor();
+        }
+        return computationExecutor;
+    }
+
+    /**
+     * Override the executor used for computation.
+     * @param executor to set, null unsets.
+     */
+    public static void setComputationExecutor(@Nullable Executor executor) {
+        computationExecutor = executor;
     }
 }
