@@ -4,5 +4,6 @@ android_library(
     srcs = glob(["*.java"]),
     deps = [
             "//third_party:com_google_code_findbugs_jsr305",
+            "//java/com/ubercab/simplestorage/executors",
     ],
 )

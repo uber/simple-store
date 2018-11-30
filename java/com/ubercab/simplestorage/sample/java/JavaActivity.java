@@ -59,7 +59,7 @@ public class JavaActivity extends Activity {
             nesting.append("/nest");
         }
         Log.e("Test", nesting.toString());
-        simpleStore = SimpleStoreImplFactory.get(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
+        simpleStore = SimpleStoreImplFactory.create(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
         loadMessage();
     }
 

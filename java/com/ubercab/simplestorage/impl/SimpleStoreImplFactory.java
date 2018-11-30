@@ -18,11 +18,11 @@ public final class SimpleStoreImplFactory {
     @GuardedBy("scopesLock")
     private static Map<String, SimpleStoreImpl> scopes = new HashMap<>();
 
-    public static SimpleStore get(Context context) {
-        return get(context, "", ScopeConfig.DEFAULT);
+    public static SimpleStore create(Context context) {
+        return create(context, "", ScopeConfig.DEFAULT);
     }
 
-    public static SimpleStore get(Context context, String scope, ScopeConfig config) {
+    public static SimpleStore create(Context context, String scope, ScopeConfig config) {
         Context appContext = context.getApplicationContext();
         SimpleStoreImpl store;
         synchronized (scopesLock) {

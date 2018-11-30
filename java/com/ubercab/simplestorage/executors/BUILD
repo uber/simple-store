@@ -1,5 +1,5 @@
 android_library(
     name = "executors",
     srcs = glob(["*.java"]),
-    visibility = ["//visibility:public"],
+    visibility = ["//java/com/ubercab/simplestorage:__pkg__"],
 )
