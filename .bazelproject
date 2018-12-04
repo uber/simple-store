@@ -13,7 +13,7 @@ additional_languages:
   # Uncomment any additional languages you want supported
   # c
   # dart
-  # kotlin
+  kotlin
   # python
 
 
