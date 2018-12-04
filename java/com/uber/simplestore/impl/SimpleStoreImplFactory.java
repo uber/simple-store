@@ -18,7 +18,7 @@ public final class SimpleStoreImplFactory {
     @GuardedBy("scopesLock")
     private static Map<String, SimpleStoreImpl> scopes = new HashMap<>();
 
-    public static SimpleStore create(Context context) {
+    static SimpleStore create(Context context) {
         return create(context, "", ScopeConfig.DEFAULT);
     }
 
@@ -28,6 +28,7 @@ public final class SimpleStoreImplFactory {
         synchronized (scopesLock) {
             if (scopes.containsKey(scope)) {
                 store = scopes.get(scope);
+                //TODO: Couldn't we side step this exception? We could just return the one we found. That, or if we want to be explicit, we can have a boolean option to fail if already present.
                 if (!Objects.requireNonNull(store).openIfClosed()) {
                     throw new IllegalStateException("scope '" + scope + "' already open");
                 }

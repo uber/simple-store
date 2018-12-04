@@ -5,6 +5,8 @@ import java.util.Queue;
 import java.util.concurrent.Executor;
 
 final class SerialExecutor implements Executor {
+    private final Object lock = new Object();
+
     private final Queue<Runnable> tasks = new ArrayDeque<>();
     private final Executor executor;
     private Runnable active;
@@ -13,22 +15,26 @@ final class SerialExecutor implements Executor {
         this.executor = executor;
     }
 
-    public synchronized void execute(final Runnable r) {
-        tasks.offer(() -> {
-            try {
-                r.run();
-            } finally {
+    public void execute(final Runnable r) {
+        synchronized (lock) {
+            tasks.offer(() -> {
+                try {
+                    r.run();
+                } finally {
+                    scheduleNext();
+                }
+            });
+            if (active == null) {
                 scheduleNext();
             }
-        });
-        if (active == null) {
-            scheduleNext();
         }
     }
 
-    private synchronized void scheduleNext() {
-        if ((active = tasks.poll()) != null) {
-            executor.execute(active);
+    private void scheduleNext() {
+        synchronized (lock) {
+            if ((active = tasks.poll()) != null) {
+                executor.execute(active);
+            }
         }
     }
 }

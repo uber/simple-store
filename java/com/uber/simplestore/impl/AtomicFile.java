@@ -30,7 +30,7 @@ final class AtomicFile {
      * Create a new AtomicFile for a file located at the given File path. The secondary backup file
      * will be the same file path with ".bak" appended.
      */
-    public AtomicFile(File baseName) {
+    AtomicFile(File baseName) {
         mBaseName = baseName;
         mBackupName = new File(baseName.getPath() + ".bak");
     }
@@ -39,12 +39,12 @@ final class AtomicFile {
      * Return the path to the base file. You should not generally use this, as the data at that path
      * may not be valid.
      */
-    public File getBaseFile() {
+    File getBaseFile() {
         return mBaseName;
     }
 
     /** Delete the atomic file. This deletes both the base and backup files. */
-    public void delete() {
+    void delete() {
         mBaseName.delete();
         mBackupName.delete();
     }
@@ -60,7 +60,7 @@ final class AtomicFile {
      * other thread finishes the write the new write operation will no longer be safe (or will be
      * lost). You must do your own threading protection for access to AtomicFile.
      */
-    public FileOutputStream startWrite() throws IOException {
+    FileOutputStream startWrite() throws IOException {
         // Rename the current file so it may be used as a backup during the next read
         if (mBaseName.exists()) {
             if (!mBackupName.exists()) {
@@ -93,7 +93,7 @@ final class AtomicFile {
      * #startWrite()}. This will close, sync, and commit the new data. The next attempt to read the
      * atomic file will return the new file stream.
      */
-    public void finishWrite(FileOutputStream str) throws IOException {
+    void finishWrite(FileOutputStream str) throws IOException {
         if (str != null) {
             sync(str);
                 str.close();
@@ -106,7 +106,7 @@ final class AtomicFile {
      * #startWrite()}. This will close the current write stream, and roll back to the previous state
      * of the file.
      */
-    public void failWrite(FileOutputStream str) {
+    void failWrite(FileOutputStream str) {
         if (str != null) {
             sync(str);
             try {
@@ -128,7 +128,7 @@ final class AtomicFile {
      * it to be in the state of a bad write and roll back, causing the new data currently being
      * written to be dropped. You must do your own threading protection for access to AtomicFile.
      */
-    public FileInputStream openRead() throws FileNotFoundException {
+    FileInputStream openRead() throws FileNotFoundException {
         if (mBackupName.exists()) {
             mBaseName.delete();
             mBackupName.renameTo(mBaseName);
@@ -140,7 +140,7 @@ final class AtomicFile {
      * A convenience for {@link #openRead()} that also reads all of the file contents into a byte
      * array which is returned.
      */
-    public byte[] readFully() throws IOException {
+    byte[] readFully() throws IOException {
         try (FileInputStream stream = openRead()) {
             int pos = 0;
             int avail = stream.available();
@@ -165,14 +165,14 @@ final class AtomicFile {
         }
     }
 
-    static boolean sync(FileOutputStream stream) {
+    private static boolean sync(FileOutputStream stream) {
         try {
             if (stream != null) {
                 stream.getFD().sync();
             }
             return true;
         } catch (IOException e) {
+            return false;
         }
-        return false;
     }
 }

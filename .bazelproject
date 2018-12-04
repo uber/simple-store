@@ -16,5 +16,7 @@ additional_languages:
   kotlin
   # python
 
+workspace_type: android
 
 android_sdk_platform: android-28
+android_min_sdk: 19

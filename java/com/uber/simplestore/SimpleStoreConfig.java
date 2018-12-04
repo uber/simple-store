@@ -15,6 +15,7 @@ public final class SimpleStoreConfig {
     private static Executor computationExecutor;
 
     public static Executor getIOExecutor() {
+        //TODO: This isn't thread safe. (https://en.wikipedia.org/wiki/Initialization-on-demand_holder_idiom)
         if (ioExecutor == null) {
             ioExecutor = StorageExecutors.ioExecutor();
         }
@@ -30,6 +31,7 @@ public final class SimpleStoreConfig {
     }
 
     public static Executor getComputationExecutor() {
+        //TODO: This isn't thread safe. (https://en.wikipedia.org/wiki/Initialization-on-demand_holder_idiom)
         if (computationExecutor == null) {
             computationExecutor = StorageExecutors.computationExecutor();
         }
@@ -42,5 +44,10 @@ public final class SimpleStoreConfig {
      */
     public static void setComputationExecutor(@Nullable Executor executor) {
         computationExecutor = executor;
+    }
+
+
+    private SimpleStoreConfig() {
+
     }
 }
