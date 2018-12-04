@@ -7,13 +7,13 @@ targets:
   # Add targets that reach the source code that you want to resolve here
   # By default, we've added all targets in your workspace
   //...
-  //java/com/ubercab/simplestorage/sample
+  //java/com/uber/simplestore/sample
 
 additional_languages:
   # Uncomment any additional languages you want supported
   # c
   # dart
-  # kotlin
+  kotlin
   # python
 
 
