@@ -1,0 +1,14 @@
+syntax = "proto2";
+
+package simplestore.primitives;
+
+option java_package = "com.uber.simplestore";
+option java_outer_classname = "Primitives";
+
+message StringList {
+    repeated string string = 1;
+}
+
+message Integer {
+    required int32 integer = 1;
+}

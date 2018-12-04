@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="com.uber.simplestore.sample">
+
+    <application
+        android:allowBackup="true"
+        android:supportsRtl="true"
+        android:name=".SampleApplication">
+    </application>
+
+</manifest>
