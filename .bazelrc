@@ -1,1 +1,0 @@
-build --java_toolchain=@bazel_tools//tools/jdk:toolchain_hostjdk8
