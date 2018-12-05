@@ -8,7 +8,7 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.uber.simplestore.impl.SimpleStoreImplFactory;
+import com.uber.simplestore.impl.SimpleStoreFactory;
 import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
 
@@ -59,7 +59,7 @@ public class JavaActivity extends Activity {
             nesting.append("/nest");
         }
         Log.e("Test", nesting.toString());
-        simpleStore = SimpleStoreImplFactory.create(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
+        simpleStore = SimpleStoreFactory.create(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
         loadMessage();
     }
 
