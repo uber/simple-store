@@ -65,7 +65,7 @@ public final class SimpleProtoStore implements SimpleStore {
             public void onError(Throwable error) {
                 executor.execute(() -> callback.onError(error));
             }
-        }, executor);
+        }, SimpleStoreConfig.getComputationExecutor());
     }
 
     @Override

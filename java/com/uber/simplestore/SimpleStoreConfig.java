@@ -8,6 +8,8 @@ import javax.annotation.Nullable;
 
 public final class SimpleStoreConfig {
 
+    private static final Object writeLock = new Object();
+
     @Nullable
     private static Executor ioExecutor;
 
@@ -16,7 +18,11 @@ public final class SimpleStoreConfig {
 
     public static Executor getIOExecutor() {
         if (ioExecutor == null) {
-            ioExecutor = StorageExecutors.ioExecutor();
+            synchronized (writeLock) {
+                if (ioExecutor == null) {
+                    ioExecutor = StorageExecutors.ioExecutor();
+                }
+            }
         }
         return ioExecutor;
     }
@@ -26,12 +32,18 @@ public final class SimpleStoreConfig {
      * @param executor to set, null unsets.
      */
     public static void setIOExecutor(@Nullable Executor executor) {
-        ioExecutor = executor;
+        synchronized (writeLock) {
+            ioExecutor = executor;
+        }
     }
 
     public static Executor getComputationExecutor() {
         if (computationExecutor == null) {
-            computationExecutor = StorageExecutors.computationExecutor();
+            synchronized (writeLock) {
+                if (computationExecutor == null) {
+                    computationExecutor = StorageExecutors.computationExecutor();
+                }
+            }
         }
         return computationExecutor;
     }
@@ -41,6 +53,12 @@ public final class SimpleStoreConfig {
      * @param executor to set, null unsets.
      */
     public static void setComputationExecutor(@Nullable Executor executor) {
-        computationExecutor = executor;
+        synchronized (writeLock) {
+            computationExecutor = executor;
+        }
+    }
+
+    private SimpleStoreConfig() {
+
     }
 }
