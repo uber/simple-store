@@ -1,13 +1,14 @@
 package com.uber.simplestore.impl;
 
-
-import android.util.Log;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+
+/*
+  Forked from AOSP to return failures instead of logcatting.
+ */
 
 /**
  * <p>Static library support version of the framework's {@link android.util.AtomicFile}, a helper
@@ -102,24 +103,6 @@ final class AtomicFile {
     }
 
     /**
-     * Call when you have failed for some reason at writing to the stream returned by {@link
-     * #startWrite()}. This will close the current write stream, and roll back to the previous state
-     * of the file.
-     */
-    public void failWrite(FileOutputStream str) {
-        if (str != null) {
-            sync(str);
-            try {
-                str.close();
-                mBaseName.delete();
-                mBackupName.renameTo(mBaseName);
-            } catch (IOException e) {
-                Log.w("AtomicFile", "failWrite: Got exception:", e);
-            }
-        }
-    }
-
-    /**
      * Open the atomic file for reading. If there previously was an incomplete write, this will roll
      * back to the last good data before opening for read. You should call close() on the
      * FileInputStream when you are done reading from it.
@@ -141,7 +124,8 @@ final class AtomicFile {
      * array which is returned.
      */
     public byte[] readFully() throws IOException {
-        try (FileInputStream stream = openRead()) {
+        FileInputStream stream = openRead();
+        try {
             int pos = 0;
             int avail = stream.available();
             byte[] data = new byte[avail];
@@ -162,6 +146,8 @@ final class AtomicFile {
                     data = newData;
                 }
             }
+        } finally {
+            stream.close();
         }
     }
 

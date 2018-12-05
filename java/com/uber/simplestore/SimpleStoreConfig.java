@@ -6,6 +6,11 @@ import java.util.concurrent.Executor;
 
 import javax.annotation.Nullable;
 
+/**
+ * Configure executors used by SimpleStore.
+ *
+ * Set may only be called once, and should be called before any use of stores.
+ */
 public final class SimpleStoreConfig {
 
     private static final Object writeLock = new Object();
