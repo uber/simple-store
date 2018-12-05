@@ -20,6 +20,9 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 final class SimpleStoreImpl implements SimpleStore {
+    static final int OPEN = 0;
+    static final int CLOSED = 1;
+    static final int TOMBSTONED = 2;
 
     private final Context context;
     private final ScopeConfig config;
@@ -27,8 +30,7 @@ final class SimpleStoreImpl implements SimpleStore {
     @Nullable
     private File scopedDirectory;
 
-    // 0 = open, 1 = closed, 2 = tombstoned
-    AtomicInteger available = new AtomicInteger();
+    AtomicInteger available = new AtomicInteger(OPEN);
 
     // Only touch from the serial executor.
     private final Map<String, byte[]> cache = new HashMap<>();
@@ -133,19 +135,19 @@ final class SimpleStoreImpl implements SimpleStore {
 
     @Override
     public void close() {
-        if (available.compareAndSet(0, 1)) {
+        if (available.compareAndSet(OPEN, CLOSED)) {
             orderedIoExecutor.execute(() -> SimpleStoreImplFactory.tombstone(SimpleStoreImpl.this));
         }
     }
 
     private void requireOpen() {
-        if (available.get() > 0) {
+        if (available.get() > OPEN) {
             throw new StoreClosedException();
         }
     }
 
     boolean tombstone() {
-        return available.compareAndSet(1, 2);
+        return available.compareAndSet(CLOSED, TOMBSTONED);
     }
 
     String getScope() {
@@ -153,11 +155,11 @@ final class SimpleStoreImpl implements SimpleStore {
     }
 
     boolean openIfClosed() {
-        return available.compareAndSet(1, 0);
+        return available.compareAndSet(CLOSED, OPEN);
     }
 
     private boolean failIfClosed(Executor executor, Callback<?> callback) {
-        if (available.get() > 0) {
+        if (available.get() > OPEN) {
             executor.execute(() -> callback.onError(new StoreClosedException()));
             return true;
         }
@@ -188,7 +190,7 @@ final class SimpleStoreImpl implements SimpleStore {
         file.finishWrite(writer);
     }
 
-    class ByteToString implements Callback<byte[]> {
+    static final class ByteToString implements Callback<byte[]> {
 
         private final Callback<String> wrapped;
 

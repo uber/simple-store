@@ -29,6 +29,7 @@ public final class SimpleStoreImplFactory {
             if (scopes.containsKey(scope)) {
                 store = scopes.get(scope);
                 if (!Objects.requireNonNull(store).openIfClosed()) {
+                    // Never let two references be issued.
                     throw new IllegalStateException("scope '" + scope + "' already open");
                 }
             } else {
