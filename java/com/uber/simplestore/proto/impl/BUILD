@@ -1,6 +1,7 @@
 android_library(
     name = "impl",
     srcs = glob(["*.java"]),
+    visibility = ["//java/com/uber/simplestore/proto:__pkg__"],
     deps = [
       "//java/com/uber/simplestore/proto",
       "//java/com/uber/simplestore/impl",
