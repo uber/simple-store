@@ -11,6 +11,9 @@ import java.util.Objects;
 
 import javax.annotation.concurrent.GuardedBy;
 
+/**
+ * Obtain an instance of a storage scope. Only one instance per scope may exist at any time.
+ */
 public final class SimpleStoreImplFactory {
 
     private static final Object scopesLock = new Object();
@@ -18,10 +21,25 @@ public final class SimpleStoreImplFactory {
     @GuardedBy("scopesLock")
     private static Map<String, SimpleStoreImpl> scopes = new HashMap<>();
 
-    public static SimpleStore create(Context context) {
-        return create(context, "", ScopeConfig.DEFAULT);
+    /**
+     * Obtain a store for a scope with default configuration.
+     *
+     * @param context to store in
+     * @param scope slash-delimited scope
+     * @return open store
+     */
+    public static SimpleStore create(Context context, String scope) {
+        return create(context, scope, ScopeConfig.DEFAULT);
     }
 
+    /**
+     * Obtain a store for a scope.
+     *
+     * @param context to store in
+     * @param scope slash-delimited scope
+     * @param config to use
+     * @return open store
+     */
     public static SimpleStore create(Context context, String scope, ScopeConfig config) {
         Context appContext = context.getApplicationContext();
         SimpleStoreImpl store;
