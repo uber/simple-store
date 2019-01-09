@@ -19,13 +19,15 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+/**
+ * Asynchronous storage implementation.
+ */
 final class SimpleStoreImpl implements SimpleStore {
-    static final int OPEN = 0;
-    static final int CLOSED = 1;
-    static final int TOMBSTONED = 2;
+    private static final int OPEN = 0;
+    private static final int CLOSED = 1;
+    private static final int TOMBSTONED = 2;
 
     private final Context context;
-    private final ScopeConfig config;
     private final String scope;
     @Nullable
     private File scopedDirectory;
@@ -39,9 +41,14 @@ final class SimpleStoreImpl implements SimpleStore {
     SimpleStoreImpl(Context appContext, String scope, ScopeConfig config) {
         this.context = appContext;
         this.scope = scope;
-        this.config = config;
         orderedIoExecutor.execute(() -> {
-            scopedDirectory = new File(context.getFilesDir().getAbsolutePath() + "/simplestore/" + scope);
+            File directory;
+            if (config.equals(ScopeConfig.CACHE)) {
+                directory = context.getCacheDir();
+            } else {
+                directory = context.getFilesDir();
+            }
+            scopedDirectory = new File(directory.getAbsolutePath() + "/simplestore/" + scope);
             //noinspection ResultOfMethodCallIgnored
             scopedDirectory.mkdirs();
         });
@@ -136,7 +143,7 @@ final class SimpleStoreImpl implements SimpleStore {
     @Override
     public void close() {
         if (available.compareAndSet(OPEN, CLOSED)) {
-            orderedIoExecutor.execute(() -> SimpleStoreImplFactory.tombstone(SimpleStoreImpl.this));
+            orderedIoExecutor.execute(() -> SimpleStoreFactory.tombstone(SimpleStoreImpl.this));
         }
     }
 

@@ -8,7 +8,7 @@ import com.google.protobuf.Parser;
 import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
-import com.uber.simplestore.impl.SimpleStoreImplFactory;
+import com.uber.simplestore.impl.SimpleStoreFactory;
 import com.uber.simplestore.proto.SimpleProtoStore;
 
 import java.util.concurrent.Executor;
@@ -24,7 +24,7 @@ public final class SimpleProtoStoreImpl implements SimpleProtoStore {
     }
 
     public static SimpleProtoStoreImpl create(Context context, String scope, ScopeConfig config) {
-        return new SimpleProtoStoreImpl(SimpleStoreImplFactory.create(context, scope, config));
+        return new SimpleProtoStoreImpl(SimpleStoreFactory.create(context, scope, config));
     }
 
     @Override

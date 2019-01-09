@@ -10,7 +10,7 @@ android_library(
 )
 
 android_binary(
-    name = "proto_bin",
-    deps = [":proto"],
+    name = "bin",
+    deps = ["//java/com/uber/simplestore/proto/impl"],
     manifest = "AndroidManifest.xml",
 )

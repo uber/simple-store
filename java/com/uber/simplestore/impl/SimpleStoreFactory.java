@@ -14,7 +14,7 @@ import javax.annotation.concurrent.GuardedBy;
 /**
  * Obtain an instance of a storage scope. Only one instance per scope may exist at any time.
  */
-public final class SimpleStoreImplFactory {
+public final class SimpleStoreFactory {
 
     private static final Object scopesLock = new Object();
 
