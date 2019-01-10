@@ -2,6 +2,9 @@ package com.uber.simplestore.proto.impl;
 
 import android.content.Context;
 
+import com.google.common.util.concurrent.AsyncFunction;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
@@ -28,77 +31,56 @@ public final class SimpleProtoStoreImpl implements SimpleProtoStore {
     }
 
     @Override
-    public <T> void get(String key, Parser<T> parser, SimpleStore.Callback<T> callback, Executor executor) {
-        simpleStore.get(key, new SimpleStore.Callback<byte[]>() {
-            @Override
-            public void onSuccess(@Nullable byte[] value) {
-                if (value == null) {
-                    executor.execute(() -> callback.onSuccess(null));
-                    return;
-                }
-                try {
-                    T parsed = parser.parseFrom(value);
-                    executor.execute(() -> callback.onSuccess(parsed));
-                } catch (InvalidProtocolBufferException e) {
-                    executor.execute(() -> callback.onError(e));
-                }
-            }
-
-            @Override
-            public void onError(Throwable error) {
-                executor.execute(() -> callback.onError(error));
-
-            }
+    public <T extends MessageLite> ListenableFuture<T> get(String key, Parser<T> parser) {
+        return Futures.transformAsync(simpleStore.get(key), (bytes) -> {
+            T parsed = parser.parseFrom(bytes);
+            return Futures.immediateFuture(parsed);
         }, SimpleStoreConfig.getComputationExecutor());
     }
 
     @Override
-    public <T extends MessageLite> void put(String key, @Nullable T value, SimpleStore.Callback<T> callback, Executor executor) {
-        byte[] bytes = null;
-        if (value != null) {
-            bytes = value.toByteArray();
-        }
-        simpleStore.put(key, bytes, new SimpleStore.Callback<byte[]>() {
-            @Override
-            public void onSuccess(@Nullable byte[] byteValue) {
-                executor.execute(() -> callback.onSuccess(value));
+    public <T extends MessageLite> ListenableFuture<T> put(String key, @Nullable T value) {
+        ListenableFuture<byte[]> proto = Futures.submitAsync(() -> {
+            byte[] bytes = null;
+            if (value != null) {
+                bytes = value.toByteArray();
             }
-
-            @Override
-            public void onError(Throwable error) {
-                executor.execute(() -> callback.onError(error));
-            }
+            return Futures.immediateFuture(bytes);
         }, SimpleStoreConfig.getComputationExecutor());
+        return Futures.transformAsync(proto,
+                p -> Futures.transform(simpleStore.put(key, p), o -> value,
+                        SimpleStoreConfig.getComputationExecutor()),
+                SimpleStoreConfig.getComputationExecutor());
     }
 
     @Override
-    public void getString(String key, @Nonnull Callback<String> callback, @Nonnull Executor executor) {
-        simpleStore.getString(key, callback, executor);
+    public ListenableFuture<String> getString(String key) {
+        return simpleStore.getString(key);
     }
 
     @Override
-    public void putString(String key, @Nullable String value, @Nonnull Callback<String> callback, @Nonnull Executor executor) {
-        simpleStore.putString(key, value, callback, executor);
+    public ListenableFuture<String> putString(String key, @Nullable String value) {
+        return simpleStore.putString(key, value);
     }
 
     @Override
-    public void get(String key, @Nonnull Callback<byte[]> callback, @Nonnull Executor executor) {
-        simpleStore.get(key, callback, executor);
+    public ListenableFuture<byte[]> get(String key) {
+        return simpleStore.get(key);
     }
 
     @Override
-    public void put(String key, @Nullable byte[] value, @Nonnull Callback<byte[]> callback, @Nonnull Executor executor) {
-        simpleStore.put(key, value, callback, executor);
+    public ListenableFuture<byte[]> put(String key, @Nullable byte[] value) {
+        return simpleStore.put(key, value);
+    }
+
+    @Override
+    public ListenableFuture<Void> deleteAll() {
+        return simpleStore.deleteAll();
     }
 
     @Override
     public void close() {
         simpleStore.close();
-    }
-
-    @Override
-    public void deleteAll(@Nonnull SimpleStore.Callback<Void> callback, @Nonnull Executor executor) {
-        simpleStore.deleteAll(callback, executor);
     }
 
 }

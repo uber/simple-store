@@ -2,8 +2,10 @@ package com.uber.simplestore.executors;
 
 import android.os.Handler;
 import android.os.Looper;
+import com.google.common.util.concurrent.MoreExecutors;
 
 import java.util.concurrent.Executor;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 /**
@@ -13,8 +15,6 @@ public final class StorageExecutors {
 
     private static final Executor MAIN_EXECUTOR = new MainThreadExecutor();
 
-    private static final Executor DIRECT_EXECUTOR = Runnable::run;
-
     private static int ioThreadCount = 0;
     private static final Executor IO_EXECUTOR = Executors.newCachedThreadPool(r -> new Thread(r, "SimpleStoreIO-"+ ioThreadCount++));
 
@@ -23,10 +23,6 @@ public final class StorageExecutors {
 
     public static Executor mainExecutor() {
         return MAIN_EXECUTOR;
-    }
-
-    public static Executor directExecutor() {
-        return DIRECT_EXECUTOR;
     }
 
     public static Executor computationExecutor() {

@@ -7,6 +7,8 @@ import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import com.google.common.util.concurrent.FutureCallback
+import com.google.common.util.concurrent.Futures
 
 import com.uber.simplestore.impl.SimpleStoreFactory
 import com.uber.simplestore.ScopeConfig
@@ -35,17 +37,17 @@ class KotlinActivity : Activity() {
             startActivity(intent)
         }
         findViewById<View>(R.id.activity_main_clear)
-                .setOnClickListener {
-                    simpleStore.deleteAll(object : SimpleStore.Callback<Void> {
-                        override fun onSuccess(msg: Void?) {
-                            loadMessage()
-                        }
+            .setOnClickListener {
+                Futures.addCallback(simpleStore.deleteAll(), object : FutureCallback<Void> {
+                    override fun onSuccess(msg: Void?) {
+                        loadMessage()
+                    }
 
-                        override fun onError(t: Throwable) {
-                            textView.text = t.toString()
-                        }
-                    }, mainExecutor)
-                }
+                    override fun onFailure(t: Throwable) {
+                        textView.text = t.toString()
+                    }
+                }, mainExecutor)
+            }
         initialize()
     }
 
@@ -62,29 +64,33 @@ class KotlinActivity : Activity() {
     private fun saveMessage() {
         button.isEnabled = false
         editText.isEnabled = false
-        simpleStore.putString("some_thing", editText.text.toString(), object : SimpleStore.Callback<String> {
-            override fun onSuccess(s: String?) {
-                editText.setText("")
-                button.isEnabled = true
-                editText.isEnabled = true
-                loadMessage()
-            }
+        Futures.addCallback(
+            simpleStore.putString("some_thing", editText.text.toString()),
+            object : FutureCallback<String> {
+                override fun onSuccess(s: String?) {
+                    editText.setText("")
+                    button.isEnabled = true
+                    editText.isEnabled = true
+                    loadMessage()
+                }
 
-            override fun onError(t: Throwable) {
-                textView.text = t.toString()
-                button.isEnabled = true
-                editText.isEnabled = true
-            }
-        }, mainExecutor)
+                override fun onFailure(t: Throwable) {
+                    textView.text = t.toString()
+                    button.isEnabled = true
+                    editText.isEnabled = true
+                }
+            },
+            mainExecutor
+        )
     }
 
     private fun loadMessage() {
-        simpleStore.getString("some_thing", object : SimpleStore.Callback<String> {
+        Futures.addCallback(simpleStore.getString("some_thing"), object : FutureCallback<String> {
             override fun onSuccess(msg: String?) {
                 textView.text = msg
             }
 
-            override fun onError(t: Throwable) {
+            override fun onFailure(t: Throwable) {
                 textView.text = t.toString()
             }
         }, mainExecutor)

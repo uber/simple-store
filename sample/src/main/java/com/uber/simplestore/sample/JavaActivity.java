@@ -3,11 +3,15 @@ package com.uber.simplestore.sample;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
@@ -39,17 +43,17 @@ public class JavaActivity extends Activity {
             startActivity(intent);
         });
         findViewById(R.id.activity_main_clear)
-                .setOnClickListener((v) -> simpleStore.deleteAll(new SimpleStore.Callback<Void>() {
-            @Override
-            public void onSuccess(Void msg) {
-                loadMessage();
-            }
+                .setOnClickListener((v) -> Futures.addCallback(simpleStore.deleteAll(), new FutureCallback<Void>() {
+                    @Override
+                    public void onSuccess(@NonNull Void result) {
+                        loadMessage();
+                    }
 
-            @Override
-            public void onError(Throwable t) {
-                textView.setText(t.toString());
-            }
-        }, mainExecutor()));
+                    @Override
+                    public void onFailure(Throwable t) {
+                        textView.setText(t.toString());
+                    }
+                }, mainExecutor()));
         initialize();
     }
 
@@ -58,7 +62,7 @@ public class JavaActivity extends Activity {
         for (int i = 0; i< scope; i++) {
             nesting.append("/nest");
         }
-        Log.e("Test", nesting.toString());
+        Log.w("Nesting: ", nesting.toString());
         simpleStore = SimpleStoreFactory.create(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
         loadMessage();
     }
@@ -66,9 +70,10 @@ public class JavaActivity extends Activity {
     private void saveMessage() {
         button.setEnabled(false);
         editText.setEnabled(false);
-        simpleStore.putString("some_thing", editText.getText().toString(), new SimpleStore.Callback<String>() {
+        ListenableFuture<String> put = simpleStore.putString("some_thing", editText.getText().toString());
+        Futures.addCallback(put, new FutureCallback<String>() {
             @Override
-            public void onSuccess(String s) {
+            public void onSuccess(@NonNull String s) {
                 editText.setText("");
                 button.setEnabled(true);
                 editText.setEnabled(true);
@@ -76,7 +81,8 @@ public class JavaActivity extends Activity {
             }
 
             @Override
-            public void onError(Throwable t) {
+            public void onFailure(@NonNull Throwable t) {
+                Log.e("JavaActivity", "Save failure", t);
                 textView.setText(t.toString());
                 button.setEnabled(true);
                 editText.setEnabled(true);
@@ -85,14 +91,15 @@ public class JavaActivity extends Activity {
     }
 
     private void loadMessage() {
-        simpleStore.getString("some_thing", new SimpleStore.Callback<String>() {
+        Futures.addCallback(simpleStore.getString("some_thing"), new FutureCallback<String>() {
             @Override
-            public void onSuccess(String msg) {
+            public void onSuccess(@NonNull String msg) {
                 textView.setText(msg);
             }
 
             @Override
-            public void onError(Throwable t) {
+            public void onFailure(@NonNull Throwable t) {
+                Log.e("JavaActivity", "Load failure", t);
                 textView.setText(t.toString());
             }
         }, mainExecutor());

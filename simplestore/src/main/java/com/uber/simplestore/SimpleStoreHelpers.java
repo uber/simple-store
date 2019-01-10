@@ -1,6 +1,6 @@
 package com.uber.simplestore;
 
-import javax.annotation.Nullable;
+import com.google.common.util.concurrent.ListenableFuture;
 
 /**
  * Useful wrappers for common storage operations.
@@ -14,20 +14,7 @@ public final class SimpleStoreHelpers {
      */
     public static void prefetch(SimpleStore store, String... keys) {
         for(String key : keys) {
-            store.get(key, noopCallback, SimpleStoreConfig.getComputationExecutor());
+            ListenableFuture<byte[]> ignored = store.get(key);
         }
     }
-
-    private static final SimpleStore.Callback<byte[]> noopCallback = new SimpleStore.Callback<byte[]>() {
-
-        @Override
-        public void onSuccess(@Nullable byte[] value) {
-
-        }
-
-        @Override
-        public void onError(Throwable error) {
-
-        }
-    };
 }
