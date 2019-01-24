@@ -2,26 +2,28 @@ package com.uber.simplestore.impl;
 
 import android.content.Context;
 
+import com.google.common.util.concurrent.*;
 import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.StoreClosedException;
-import com.uber.simplestore.utils.BlockingResult;
-import com.uber.simplestore.utils.ManualExecutor;
 
+import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.junit.After;
-import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 
-import static com.uber.simplestore.executors.StorageExecutors.directExecutor;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
+
+import static com.google.common.truth.Truth.assertThat;
+import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
 
+@SuppressWarnings("UnstableApiUsage")
 @RunWith(RobolectricTestRunner.class)
 public final class SimpleStoreImplTest {
 
@@ -35,59 +37,65 @@ public final class SimpleStoreImplTest {
     }
 
     @Test
-    public void nullWhenMissing() {
+    public void nullWhenMissing() throws Exception {
         try(SimpleStore store = SimpleStoreFactory.create(context, "")) {
-            BlockingResult<byte[]> missing = new BlockingResult<>();
-            store.get(TEST_KEY, missing, directExecutor());
-            assertTrue(missing.isSuccess());
-            Assert.assertNull(missing.getSuccessful());
+            ListenableFuture<byte[]> future = store.get(TEST_KEY);
+            assertThat(future.get()).isNull();
         }
     }
 
     @Test
-    public void puttingNullDeletesKey() {
+    public void puttingNullDeletesKey() throws Exception {
         try(SimpleStore store = SimpleStoreFactory.create(context, "")) {
-            BlockingResult<byte[]> saved = new BlockingResult<>();
-            store.put(TEST_KEY, new byte[1], saved, directExecutor());
-            saved.getSuccessful();
-            BlockingResult<byte[]> done = new BlockingResult<>();
-            store.put(TEST_KEY, null, done, directExecutor());
-            Assert.assertNull(done.getSuccessful());
+            ListenableFuture<byte[]> first = store.put(TEST_KEY, new byte[1]);
+            ListenableFuture<byte[]> second = store.put(TEST_KEY, null);
+            assertThat(second.get()).isNull();
         }
     }
 
     @Test
-    public void deleteAll() {
+    public void deleteAll() throws Exception {
         try(SimpleStore store = SimpleStoreFactory.create(context, "")) {
-            BlockingResult<byte[]> saved = new BlockingResult<>();
-            store.put(TEST_KEY, new byte[1], saved, directExecutor());
-            saved.getSuccessful();
-            BlockingResult<Void> deleted = new BlockingResult<>();
-            store.deleteAll(deleted, directExecutor());
-            deleted.getSuccessful();
-            BlockingResult<byte[]> emptyResult = new BlockingResult<>();
-            store.get(TEST_KEY, emptyResult, directExecutor());
-            assertNull(emptyResult.getSuccessful());
+            ListenableFuture<byte[]> first = store.put(TEST_KEY, new byte[1]);
+            ListenableFuture<Void> second = store.deleteAll();
+            ListenableFuture<byte[]> empty = store.get(TEST_KEY);
+            assertThat(empty.get()).isNull();
         }
     }
 
     @Test
-    public void failsAllOnClose() {
-        ManualExecutor manualExecutor = new ManualExecutor();
-        SimpleStoreConfig.setIOExecutor(manualExecutor);
-        BlockingResult<byte[]> savedSuccess = new BlockingResult<>();
-        BlockingResult<byte[]> write = new BlockingResult<>();
-        BlockingResult<byte[]> read = new BlockingResult<>();
+    public void failsAllOnClose() throws Exception{
+        ListenableFuture<byte[]> success;
+        ListenableFuture<byte[]> read;
+        ListenableFuture<byte[]> write;
+        CountDownLatch latch = new CountDownLatch(1);
         try(SimpleStore store = SimpleStoreFactory.create(context, "")) {
-            store.put(TEST_KEY, new byte[1], savedSuccess, directExecutor());
-            manualExecutor.flush();
-            store.put(TEST_KEY, new byte[1], write, directExecutor());
-            store.get(TEST_KEY, read, directExecutor());
+            success = store.put(TEST_KEY, new byte[1]);
+            SimpleStoreConfig.getIOExecutor().execute(() -> {
+                try {
+                    // very very slow IO.
+                    latch.await();
+                } catch (InterruptedException ignored) {
+
+                }
+            });
+            write = store.put(TEST_KEY, new byte[1]);
+            read = store.get(TEST_KEY);
         }
-        manualExecutor.flush();
-        assertTrue(savedSuccess.isSuccess());
-        assertEquals(StoreClosedException.class, read.getFailure().getClass());
-        assertEquals(StoreClosedException.class, write.getFailure().getClass());
+        success.get();
+        latch.countDown();
+        Futures.addCallback(write, new FutureCallback<byte[]>() {
+            @Override
+            public void onSuccess(@NullableDecl byte[] result) {
+                fail("write succeeded");
+            }
+
+            @Override
+            public void onFailure(Throwable t) {
+                assertThat(t.getClass()).isEqualTo(StoreClosedException.class);
+            }
+        }, directExecutor());
+        assertThat(Futures.successfulAsList(write, read).get()).containsExactly(null, null);
     }
 
     @Test
@@ -97,19 +105,17 @@ public final class SimpleStoreImplTest {
     }
 
     @Test
-    public void scopes() {
+    public void scopes() throws Exception {
         String someScope = "bar";
         String value = "some value";
         try(SimpleStore scopedBase = SimpleStoreFactory.create(context, someScope, ScopeConfig.DEFAULT)) {
-            BlockingResult<String> savedSuccess = new BlockingResult<>();
-            scopedBase.putString("foo", value, savedSuccess, directExecutor());
-            savedSuccess.getSuccessful();
+            ListenableFuture<String> success = scopedBase.putString("foo", value);
+            success.get();
         }
 
         try(SimpleStore scopedFactory = SimpleStoreFactory.create(context, someScope, ScopeConfig.DEFAULT)) {
-            BlockingResult<String> read = new BlockingResult<>();
-            scopedFactory.getString("foo", read, directExecutor());
-            assertEquals(value, read.getSuccessful());
+            ListenableFuture<String> read = scopedFactory.getString("foo");
+            assertThat(read.get()).isEqualTo(value);
         }
     }
 

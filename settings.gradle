@@ -1,1 +1,1 @@
-include ':simplestore', ':sample'
+include ':simplestore', ':sample', ':protosimplestore'
