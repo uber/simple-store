@@ -1,4 +1,4 @@
-package com.uber.simplestore;
+package com.uber.simplestore.proto;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("com.uber.simplestore.test", appContext.getPackageName());
+        assertEquals("com.uber.simplestore.proto.test", appContext.getPackageName());
     }
 }

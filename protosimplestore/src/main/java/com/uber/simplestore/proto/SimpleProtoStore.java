@@ -5,8 +5,6 @@ import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
 import com.uber.simplestore.SimpleStore;
 
-import java.util.concurrent.Executor;
-
 import javax.annotation.Nullable;
 
 public interface SimpleProtoStore extends SimpleStore {

@@ -2,10 +2,8 @@ package com.uber.simplestore.proto.impl;
 
 import android.content.Context;
 
-import com.google.common.util.concurrent.AsyncFunction;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
 import com.uber.simplestore.ScopeConfig;
@@ -14,11 +12,9 @@ import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import com.uber.simplestore.proto.SimpleProtoStore;
 
-import java.util.concurrent.Executor;
-
-import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("UnstableApiUsage")
 public final class SimpleProtoStoreImpl implements SimpleProtoStore {
     private final SimpleStore simpleStore;
 
