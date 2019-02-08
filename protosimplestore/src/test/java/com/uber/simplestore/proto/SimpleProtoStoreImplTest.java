@@ -35,6 +35,21 @@ public class SimpleProtoStoreImplTest {
   }
 
   @Test
+  public void defaultInstanceWhenEmpty_withRequiredField() throws Exception {
+    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
+      ListenableFuture<TestProto.Required> future =
+          store.get(TEST_KEY, TestProto.Required.parser());
+      try {
+        Futures.getChecked(future, InvalidProtocolBufferException.class);
+        fail();
+      } catch (InvalidProtocolBufferException e) {
+        // expected
+        assertThat(e).hasMessageThat().contains("Message was missing required fields.");
+      }
+    }
+  }
+
+  @Test
   public void savesDefaultInstance() throws Exception {
     TestProto.Basic basic = TestProto.Basic.getDefaultInstance();
     try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
@@ -71,6 +86,7 @@ public class SimpleProtoStoreImplTest {
         fail();
       } catch (InvalidProtocolBufferException e) {
         // expected
+        assertThat(e).hasMessageThat().contains("invalid wire type");
       }
     }
   }

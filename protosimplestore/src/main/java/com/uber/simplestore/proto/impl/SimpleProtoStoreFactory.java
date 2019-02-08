@@ -5,6 +5,10 @@ import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import com.uber.simplestore.proto.SimpleProtoStore;
 
+/**
+ * Obtain an instance of a storage scope with proto support. Only one instance per scope may exist
+ * at any time.
+ */
 public final class SimpleProtoStoreFactory {
 
   public static SimpleProtoStore create(Context context, String scope) {

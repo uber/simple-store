@@ -28,18 +28,24 @@ public final class SimpleProtoStoreImpl implements SimpleProtoStore {
         simpleStore.get(key),
         (bytes) -> {
           T parsed;
-          try {
-            if (bytes == null || bytes.length == 0) {
+          if (bytes == null || bytes.length == 0) {
+            try {
               parsed = parser.parseFrom(ByteString.EMPTY);
-            } else {
-              parsed = parser.parseFrom(bytes);
-            }
-          } catch (InvalidProtocolBufferException e) {
-            if (config.equals(ScopeConfig.CACHE)) {
-              // A cache is allowed to be cleared whenever.
-              parsed = parser.parseFrom(ByteString.EMPTY);
-            } else {
+            } catch (InvalidProtocolBufferException e) {
+              // Has required fields, so we will pass this error forward.
               return Futures.immediateFailedFuture(e);
+            }
+          } else {
+            try {
+              parsed = parser.parseFrom(bytes);
+            } catch (InvalidProtocolBufferException e) {
+              if (config.equals(ScopeConfig.CACHE)) {
+                // A cache is allowed to be cleared whenever and we will try and give you a default
+                // instance instead.
+                return Futures.immediateFuture(parser.parseFrom(ByteString.EMPTY));
+              } else {
+                return Futures.immediateFailedFuture(e);
+              }
             }
           }
           return Futures.immediateFuture(parsed);

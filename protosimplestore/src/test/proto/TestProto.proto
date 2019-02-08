@@ -8,3 +8,9 @@ option java_outer_classname = "TestProto";
 message Basic {
     optional string name = 1;
 }
+
+message Required {
+    optional string option = 1;
+    required string withDefault = 2 [default = "default"];
+    required string noDefault = 3;
+}
