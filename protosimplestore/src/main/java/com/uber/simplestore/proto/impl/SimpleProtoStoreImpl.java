@@ -1,27 +1,25 @@
 package com.uber.simplestore.proto.impl;
 
-import android.content.Context;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.google.protobuf.ByteString;
+import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
 import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
-import com.uber.simplestore.impl.SimpleStoreFactory;
 import com.uber.simplestore.proto.SimpleProtoStore;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("UnstableApiUsage")
 public final class SimpleProtoStoreImpl implements SimpleProtoStore {
   private final SimpleStore simpleStore;
+  private final ScopeConfig config;
 
-  private SimpleProtoStoreImpl(SimpleStore simpleStore) {
+  SimpleProtoStoreImpl(SimpleStore simpleStore, ScopeConfig config) {
     this.simpleStore = simpleStore;
-  }
-
-  public static SimpleProtoStoreImpl create(Context context, String scope, ScopeConfig config) {
-    return new SimpleProtoStoreImpl(SimpleStoreFactory.create(context, scope, config));
+    this.config = config;
   }
 
   @Override
@@ -29,7 +27,21 @@ public final class SimpleProtoStoreImpl implements SimpleProtoStore {
     return Futures.transformAsync(
         simpleStore.get(key),
         (bytes) -> {
-          T parsed = parser.parseFrom(bytes);
+          T parsed;
+          try {
+            if (bytes == null || bytes.length == 0) {
+              parsed = parser.parseFrom(ByteString.EMPTY);
+            } else {
+              parsed = parser.parseFrom(bytes);
+            }
+          } catch (InvalidProtocolBufferException e) {
+            if (config.equals(ScopeConfig.CACHE)) {
+              // A cache is allowed to be cleared whenever.
+              parsed = parser.parseFrom(ByteString.EMPTY);
+            } else {
+              return Futures.immediateFailedFuture(e);
+            }
+          }
           return Futures.immediateFuture(parsed);
         },
         SimpleStoreConfig.getComputationExecutor());
@@ -41,7 +53,7 @@ public final class SimpleProtoStoreImpl implements SimpleProtoStore {
         Futures.submitAsync(
             () -> {
               byte[] bytes = null;
-              if (value != null) {
+              if (value != null && !value.equals(value.getDefaultInstanceForType())) {
                 bytes = value.toByteArray();
               }
               return Futures.immediateFuture(bytes);
