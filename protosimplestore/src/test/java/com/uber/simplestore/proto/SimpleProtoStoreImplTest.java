@@ -11,6 +11,7 @@ import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
 import com.uber.simplestore.proto.test.TestProto;
+import java.nio.charset.Charset;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
@@ -76,7 +77,7 @@ public class SimpleProtoStoreImplTest {
   @Test
   public void failsGracefullyOnParsingFail() throws Exception {
     try (SimpleStore simpleStore = SimpleProtoStoreFactory.create(context, "")) {
-      simpleStore.put(TEST_KEY, "garbage".getBytes()).get();
+      simpleStore.put(TEST_KEY, "garbage".getBytes(Charset.defaultCharset())).get();
     }
 
     try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
@@ -94,7 +95,7 @@ public class SimpleProtoStoreImplTest {
   @Test
   public void whenCache_returnsDefaultOnParseFailure() throws Exception {
     try (SimpleStore simpleStore = SimpleProtoStoreFactory.create(context, "")) {
-      simpleStore.put(TEST_KEY, "garbage".getBytes()).get();
+      simpleStore.put(TEST_KEY, "garbage".getBytes(Charset.defaultCharset())).get();
     }
 
     try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "", ScopeConfig.CACHE)) {

@@ -39,6 +39,8 @@ dependencies {
     implementation 'com.google.code.findbugs:jsr305:3.0.2'
     implementation 'com.google.guava:guava:27.0.1-android'
 
+    annotationProcessor "com.uber.nullaway:nullaway:0.6.4"
+    testAnnotationProcessor "com.uber.nullaway:nullaway:0.6.4"
     testImplementation "com.google.truth:truth:0.42"
     testImplementation "org.robolectric:robolectric:4.1"
     testImplementation 'junit:junit:4.12'

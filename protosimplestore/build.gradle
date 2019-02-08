@@ -63,6 +63,8 @@ dependencies {
     implementation 'com.google.guava:guava:27.0.1-android'
     implementation 'com.google.protobuf:protobuf-lite:3.0.1'
     implementation 'com.android.support:appcompat-v7:28.0.0'
+    annotationProcessor "com.uber.nullaway:nullaway:0.6.4"
+    testAnnotationProcessor "com.uber.nullaway:nullaway:0.6.4"
 
     testImplementation "com.google.truth:truth:0.42"
     testImplementation "org.robolectric:robolectric:4.1"

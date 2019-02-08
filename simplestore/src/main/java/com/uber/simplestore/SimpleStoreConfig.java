@@ -13,9 +13,9 @@ public final class SimpleStoreConfig {
 
   private static final Object writeLock = new Object();
 
-  @Nullable private static Executor ioExecutor;
+  @Nullable private static volatile Executor ioExecutor;
 
-  @Nullable private static Executor computationExecutor;
+  @Nullable private static volatile Executor computationExecutor;
 
   public static Executor getIOExecutor() {
     if (ioExecutor == null) {

@@ -47,5 +47,6 @@ public interface SimpleStore extends Closeable {
   ListenableFuture<Void> deleteAll();
 
   /** Fails all outstanding operations then releases the memory cache. */
+  @Override
   void close();
 }

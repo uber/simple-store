@@ -9,6 +9,7 @@ import com.uber.simplestore.StoreClosedException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -56,7 +57,7 @@ final class SimpleStoreImpl implements SimpleStore {
         get(key),
         (bytes) -> {
           if (bytes != null && bytes.length > 0) {
-            return new String(bytes);
+            return new String(bytes, Charset.defaultCharset());
           } else {
             return null;
           }
@@ -65,8 +66,8 @@ final class SimpleStoreImpl implements SimpleStore {
   }
 
   @Override
-  public ListenableFuture<String> putString(String key, String value) {
-    byte[] bytes = value != null ? value.getBytes() : null;
+  public ListenableFuture<String> putString(String key, @Nullable String value) {
+    byte[] bytes = value != null ? value.getBytes(Charset.defaultCharset()) : null;
     return Futures.transform(put(key, bytes), (b) -> value, MoreExecutors.directExecutor());
   }
 
@@ -184,6 +185,7 @@ final class SimpleStoreImpl implements SimpleStore {
     file.delete();
   }
 
+  @Nullable
   private byte[] readFile(String key) throws IOException {
     File baseFile = new File(scopedDirectory, key);
     AtomicFile file = new AtomicFile(baseFile);

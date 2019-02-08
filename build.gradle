@@ -4,6 +4,9 @@ buildscript {
     ext.kotlin_version = '1.3.20'
     repositories {
         google()
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
         jcenter()
     }
     dependencies {
@@ -11,15 +14,29 @@ buildscript {
         classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:3.18.0"
         classpath 'com.google.protobuf:protobuf-gradle-plugin:0.8.8'
-        // NOTE: Do not place your application dependencies here; they belong
-        // in the individual module build.gradle files
+        classpath "net.ltgt.gradle:gradle-errorprone-plugin:0.6"
     }
 }
 
+import net.ltgt.gradle.errorprone.CheckSeverity
 allprojects {
+    apply plugin: 'net.ltgt.errorprone'
     repositories {
         google()
         jcenter()
+    }
+
+    dependencies {
+        errorprone "com.google.errorprone:error_prone_core:2.3.2"
+        errorproneJavac "com.google.errorprone:javac:9-dev-r4023-3"
+    }
+
+    tasks.withType(JavaCompile) {
+        options.errorprone {
+            excludedPaths=".*/build/generated/.*"
+            check("NullAway", CheckSeverity.ERROR)
+            option("NullAway:AnnotatedPackages", "com.uber")
+        }
     }
 }
 
