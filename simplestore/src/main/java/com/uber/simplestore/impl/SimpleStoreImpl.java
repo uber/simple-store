@@ -22,6 +22,7 @@ final class SimpleStoreImpl implements SimpleStore {
   private static final int OPEN = 0;
   private static final int CLOSED = 1;
   private static final int TOMBSTONED = 2;
+  private static final byte[] EMPTY_BYTES = new byte[0];
 
   private final Context context;
   private final String scope;
@@ -88,11 +89,10 @@ final class SimpleStoreImpl implements SimpleStore {
             } catch (IOException e) {
               return Futures.immediateFailedFuture(e);
             }
-            if (value == null) {
-              cache.remove(key);
-            } else {
-              cache.put(key, value);
+            if (value == null || value.length == 0) {
+              value = EMPTY_BYTES;
             }
+            cache.put(key, value);
           }
           return Futures.immediateFuture(value);
         },
@@ -107,9 +107,10 @@ final class SimpleStoreImpl implements SimpleStore {
           if (isClosed()) {
             return Futures.immediateFailedFuture(new StoreClosedException());
           }
-          if (value == null) {
-            cache.remove(key);
+          if (value == null || value.length == 0) {
+            cache.put(key, EMPTY_BYTES);
             deleteFile(key);
+            return Futures.immediateFuture(EMPTY_BYTES);
           } else {
             cache.put(key, value);
             try {
@@ -117,10 +118,19 @@ final class SimpleStoreImpl implements SimpleStore {
             } catch (IOException e) {
               return Futures.immediateFailedFuture(e);
             }
+            return Futures.immediateFuture(value);
           }
-          return Futures.immediateFuture(value);
         },
         orderedIoExecutor);
+  }
+
+  @Override
+  public ListenableFuture<Boolean> contains(String key) {
+    requireOpen();
+    return Futures.transform(
+        get(key),
+        (value) -> value != null && value.length > 0,
+        SimpleStoreConfig.getComputationExecutor());
   }
 
   @Override

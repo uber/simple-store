@@ -74,6 +74,14 @@ public final class SimpleProtoStoreImpl implements SimpleProtoStore {
   }
 
   @Override
+  public ListenableFuture<Boolean> contains(String key) {
+    return Futures.transform(
+        get(key),
+        value -> value != null && value.length > 0,
+        SimpleStoreConfig.getComputationExecutor());
+  }
+
+  @Override
   public ListenableFuture<String> getString(String key) {
     return simpleStore.getString(key);
   }

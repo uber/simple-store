@@ -32,10 +32,10 @@ public final class SimpleStoreImplTest {
   }
 
   @Test
-  public void nullWhenMissing() throws Exception {
+  public void zeroLengthWhenMissing() throws Exception {
     try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
       ListenableFuture<byte[]> future = store.get(TEST_KEY);
-      assertThat(future.get()).isNull();
+      assertThat(future.get()).hasLength(0);
     }
   }
 
@@ -44,7 +44,7 @@ public final class SimpleStoreImplTest {
     try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
       ListenableFuture<byte[]> first = store.put(TEST_KEY, new byte[1]);
       ListenableFuture<byte[]> second = store.put(TEST_KEY, null);
-      assertThat(second.get()).isNull();
+      assertThat(second.get()).isEmpty();
     }
   }
 
@@ -54,7 +54,7 @@ public final class SimpleStoreImplTest {
       ListenableFuture<byte[]> first = store.put(TEST_KEY, new byte[1]);
       ListenableFuture<Void> second = store.deleteAll();
       ListenableFuture<byte[]> empty = store.get(TEST_KEY);
-      assertThat(empty.get()).isNull();
+      assertThat(empty.get()).isEmpty();
     }
   }
 
