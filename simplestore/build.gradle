@@ -1,4 +1,5 @@
 apply plugin: 'com.android.library'
+apply plugin: "com.diffplug.gradle.spotless"
 
 android {
     compileSdkVersion 28
@@ -24,6 +25,13 @@ android {
         targetCompatibility JavaVersion.VERSION_1_8
     }
     buildToolsVersion '28.0.3'
+}
+
+spotless {
+    java {
+        target '**/*.java'
+        googleJavaFormat()
+    }
 }
 
 dependencies {

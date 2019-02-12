@@ -1,6 +1,7 @@
 apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
+apply plugin: "com.diffplug.gradle.spotless"
 
 android {
     compileSdkVersion 28
@@ -24,6 +25,13 @@ android {
     compileOptions {
         sourceCompatibility JavaVersion.VERSION_1_8
         targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+spotless {
+    java {
+        target '**/*.java'
+        googleJavaFormat()
     }
 }
 
