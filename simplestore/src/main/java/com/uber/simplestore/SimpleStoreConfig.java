@@ -1,69 +1,65 @@
 package com.uber.simplestore;
 
 import com.uber.simplestore.executors.StorageExecutors;
-
 import java.util.concurrent.Executor;
-
 import javax.annotation.Nullable;
 
 /**
  * Configure executors used by SimpleStore.
  *
- * Set may only be called once, and should be called before any use of stores.
+ * <p>Set may only be called once, and should be called before any use of stores.
  */
 public final class SimpleStoreConfig {
 
-    private static final Object writeLock = new Object();
+  private static final Object writeLock = new Object();
 
-    @Nullable
-    private static Executor ioExecutor;
+  @Nullable private static Executor ioExecutor;
 
-    @Nullable
-    private static Executor computationExecutor;
+  @Nullable private static Executor computationExecutor;
 
-    public static Executor getIOExecutor() {
+  public static Executor getIOExecutor() {
+    if (ioExecutor == null) {
+      synchronized (writeLock) {
         if (ioExecutor == null) {
-            synchronized (writeLock) {
-                if (ioExecutor == null) {
-                    ioExecutor = StorageExecutors.ioExecutor();
-                }
-            }
+          ioExecutor = StorageExecutors.ioExecutor();
         }
-        return ioExecutor;
+      }
     }
+    return ioExecutor;
+  }
 
-    /**
-     * Override the executor used for IO operations.
-     * @param executor to set, null unsets.
-     */
-    public static void setIOExecutor(@Nullable Executor executor) {
-        synchronized (writeLock) {
-            ioExecutor = executor;
-        }
+  /**
+   * Override the executor used for IO operations.
+   *
+   * @param executor to set, null unsets.
+   */
+  public static void setIOExecutor(@Nullable Executor executor) {
+    synchronized (writeLock) {
+      ioExecutor = executor;
     }
+  }
 
-    public static Executor getComputationExecutor() {
+  public static Executor getComputationExecutor() {
+    if (computationExecutor == null) {
+      synchronized (writeLock) {
         if (computationExecutor == null) {
-            synchronized (writeLock) {
-                if (computationExecutor == null) {
-                    computationExecutor = StorageExecutors.computationExecutor();
-                }
-            }
+          computationExecutor = StorageExecutors.computationExecutor();
         }
-        return computationExecutor;
+      }
     }
+    return computationExecutor;
+  }
 
-    /**
-     * Override the executor used for computation.
-     * @param executor to set, null unsets.
-     */
-    public static void setComputationExecutor(@Nullable Executor executor) {
-        synchronized (writeLock) {
-            computationExecutor = executor;
-        }
+  /**
+   * Override the executor used for computation.
+   *
+   * @param executor to set, null unsets.
+   */
+  public static void setComputationExecutor(@Nullable Executor executor) {
+    synchronized (writeLock) {
+      computationExecutor = executor;
     }
+  }
 
-    private SimpleStoreConfig() {
-
-    }
+  private SimpleStoreConfig() {}
 }
