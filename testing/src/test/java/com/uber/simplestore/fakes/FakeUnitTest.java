@@ -48,6 +48,7 @@ public class FakeUnitTest {
     ListenableFuture<String> future = store.getString(TEST_KEY);
     try {
       future.get();
+      fail();
     } catch (Exception e) {
       assertThat(e).hasCauseThat().isInstanceOf(IOException.class);
     }
