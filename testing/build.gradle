@@ -1,0 +1,42 @@
+apply plugin: 'com.android.library'
+apply plugin: "com.diffplug.gradle.spotless"
+
+android {
+    compileSdkVersion 28
+    defaultConfig {
+        minSdkVersion 19
+        targetSdkVersion 28
+        versionCode 1
+        versionName "1.0"
+
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+    }
+    compileOptions {
+        sourceCompatibility = '1.8'
+        targetCompatibility = '1.8'
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+    buildToolsVersion '28.0.3'
+}
+
+spotless {
+    java {
+        target '**/*.java'
+        googleJavaFormat()
+    }
+}
+
+dependencies {
+    implementation project(":simplestore")
+    implementation 'com.google.guava:guava:27.0.1-android'
+    implementation 'com.google.code.findbugs:jsr305:3.0.2'
+
+    annotationProcessor "com.uber.nullaway:nullaway:0.6.4"
+    testAnnotationProcessor "com.uber.nullaway:nullaway:0.6.4"
+
+    testImplementation "com.google.truth:truth:0.42"
+    testImplementation 'junit:junit:4.12'
+}
+
+apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
