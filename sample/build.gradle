@@ -43,6 +43,8 @@ dependencies {
     implementation 'com.google.guava:guava:27.0.1-android'
     implementation project(":simplestore")
     implementation project(":protosimplestore")
+    annotationProcessor "com.uber.nullaway:nullaway:0.6.4"
+    testAnnotationProcessor "com.uber.nullaway:nullaway:0.6.4"
 
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'

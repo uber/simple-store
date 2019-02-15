@@ -9,6 +9,7 @@ import com.uber.simplestore.StoreClosedException;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -21,6 +22,7 @@ final class SimpleStoreImpl implements SimpleStore {
   private static final int OPEN = 0;
   private static final int CLOSED = 1;
   private static final int TOMBSTONED = 2;
+  private static final byte[] EMPTY_BYTES = new byte[0];
 
   private final Context context;
   private final String scope;
@@ -56,7 +58,7 @@ final class SimpleStoreImpl implements SimpleStore {
         get(key),
         (bytes) -> {
           if (bytes != null && bytes.length > 0) {
-            return new String(bytes);
+            return new String(bytes, Charset.defaultCharset());
           } else {
             return null;
           }
@@ -65,8 +67,8 @@ final class SimpleStoreImpl implements SimpleStore {
   }
 
   @Override
-  public ListenableFuture<String> putString(String key, String value) {
-    byte[] bytes = value != null ? value.getBytes() : null;
+  public ListenableFuture<String> putString(String key, @Nullable String value) {
+    byte[] bytes = value != null ? value.getBytes(Charset.defaultCharset()) : null;
     return Futures.transform(put(key, bytes), (b) -> value, MoreExecutors.directExecutor());
   }
 
@@ -87,11 +89,10 @@ final class SimpleStoreImpl implements SimpleStore {
             } catch (IOException e) {
               return Futures.immediateFailedFuture(e);
             }
-            if (value == null) {
-              cache.remove(key);
-            } else {
-              cache.put(key, value);
+            if (value == null || value.length == 0) {
+              value = EMPTY_BYTES;
             }
+            cache.put(key, value);
           }
           return Futures.immediateFuture(value);
         },
@@ -106,9 +107,10 @@ final class SimpleStoreImpl implements SimpleStore {
           if (isClosed()) {
             return Futures.immediateFailedFuture(new StoreClosedException());
           }
-          if (value == null) {
-            cache.remove(key);
+          if (value == null || value.length == 0) {
+            cache.put(key, EMPTY_BYTES);
             deleteFile(key);
+            return Futures.immediateFuture(EMPTY_BYTES);
           } else {
             cache.put(key, value);
             try {
@@ -116,10 +118,19 @@ final class SimpleStoreImpl implements SimpleStore {
             } catch (IOException e) {
               return Futures.immediateFailedFuture(e);
             }
+            return Futures.immediateFuture(value);
           }
-          return Futures.immediateFuture(value);
         },
         orderedIoExecutor);
+  }
+
+  @Override
+  public ListenableFuture<Boolean> contains(String key) {
+    requireOpen();
+    return Futures.transform(
+        get(key),
+        (value) -> value != null && value.length > 0,
+        SimpleStoreConfig.getComputationExecutor());
   }
 
   @Override
@@ -184,6 +195,7 @@ final class SimpleStoreImpl implements SimpleStore {
     file.delete();
   }
 
+  @Nullable
   private byte[] readFile(String key) throws IOException {
     File baseFile = new File(scopedDirectory, key);
     AtomicFile file = new AtomicFile(baseFile);

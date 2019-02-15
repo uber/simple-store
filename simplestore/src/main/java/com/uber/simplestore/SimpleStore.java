@@ -42,10 +42,20 @@ public interface SimpleStore extends Closeable {
   @CheckReturnValue
   ListenableFuture<byte[]> put(String key, @Nullable byte[] value);
 
+  /**
+   * Determine if a key exists in storage.
+   *
+   * @param key to check
+   * @return if key is set
+   */
+  @CheckReturnValue
+  ListenableFuture<Boolean> contains(String key);
+
   /** Delete all keys in this direct scope. */
   @CheckReturnValue
   ListenableFuture<Void> deleteAll();
 
   /** Fails all outstanding operations then releases the memory cache. */
+  @Override
   void close();
 }
