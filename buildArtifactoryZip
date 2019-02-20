@@ -1,0 +1,26 @@
+#!/bin/bash
+VERSION="0.0.4"
+./gradlew protosimplestore:uploadArchives
+./gradlew simplestore:uploadArchives
+./gradlew testing:uploadArchives
+
+mkdir -p com/uber/simplestore/simplestore/$VERSION
+cp simplestore/build/poms/pom-default.xml com/uber/simplestore/simplestore/$VERSION/simplestore-$VERSION.pom
+cp simplestore/build/outputs/aar/simplestore-release.aar com/uber/simplestore/simplestore/$VERSION/simplestore-$VERSION.aar
+cp simplestore/build/libs/simplestore-$VERSION-javadoc.jar com/uber/simplestore/simplestore/$VERSION/
+cp simplestore/build/libs/simplestore-$VERSION-sources.jar com/uber/simplestore/simplestore/$VERSION/
+
+mkdir -p com/uber/simplestore/simplestore-proto/$VERSION
+cp protosimplestore/build/poms/pom-default.xml com/uber/simplestore/simplestore-proto/$VERSION/simplestore-proto-$VERSION.pom
+cp protosimplestore/build/outputs/aar/protosimplestore-release.aar com/uber/simplestore/simplestore-proto/$VERSION/simplestore-proto-$VERSION.aar
+cp protosimplestore/build/libs/protosimplestore-$VERSION-javadoc.jar com/uber/simplestore/simplestore-proto/$VERSION/simplestore-proto-$VERSION-javadoc.jar
+cp protosimplestore/build/libs/protosimplestore-$VERSION-sources.jar com/uber/simplestore/simplestore-proto/$VERSION/simplestore-proto-$VERSION-sources.jar
+
+mkdir -p com/uber/simplestore/simplestore-testing/$VERSION
+cp testing/build/poms/pom-default.xml com/uber/simplestore/simplestore-testing/$VERSION/simplestore-testing-$VERSION.pom
+cp testing/build/outputs/aar/testing-release.aar com/uber/simplestore/simplestore-testing/$VERSION/simplestore-testing-$VERSION.aar
+cp testing/build/libs/testing-$VERSION-javadoc.jar com/uber/simplestore/simplestore-testing/$VERSION/simplestore-testing-$VERSION-javadoc.jar
+cp testing/build/libs/testing-$VERSION-sources.jar com/uber/simplestore/simplestore-testing/$VERSION/simplestore-testing-$VERSION-sources.jar
+
+zip -r com.zip com
+rm -rf com/
