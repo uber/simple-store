@@ -43,6 +43,15 @@ public interface SimpleStore extends Closeable {
   ListenableFuture<byte[]> put(String key, @Nullable byte[] value);
 
   /**
+   * Removes a key from memory & disk.
+   *
+   * @param key to remove
+   * @return when complete
+   */
+  @CheckReturnValue
+  ListenableFuture<Void> remove(String key);
+
+  /**
    * Determine if a key exists in storage.
    *
    * @param key to check

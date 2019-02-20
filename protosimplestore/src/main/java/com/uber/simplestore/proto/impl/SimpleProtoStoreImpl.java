@@ -102,6 +102,11 @@ public final class SimpleProtoStoreImpl implements SimpleProtoStore {
   }
 
   @Override
+  public ListenableFuture<Void> remove(String key) {
+    return simpleStore.remove(key);
+  }
+
+  @Override
   public ListenableFuture<Void> deleteAll() {
     return simpleStore.deleteAll();
   }

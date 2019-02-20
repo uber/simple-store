@@ -76,6 +76,12 @@ public final class FakeSimpleStore implements SimpleStore {
     closed = true;
   }
 
+  @Override
+  public ListenableFuture<Void> remove(String key) {
+    data.remove(key);
+    return returnOrFail(null);
+  }
+
   private <T> ListenableFuture<T> returnOrFail(@Nullable T value) {
     if (closed) {
       throw new StoreClosedException();

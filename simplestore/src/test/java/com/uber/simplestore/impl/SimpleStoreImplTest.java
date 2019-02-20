@@ -5,7 +5,9 @@ import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.FutureCallback;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
@@ -45,6 +47,23 @@ public final class SimpleStoreImplTest {
       ListenableFuture<byte[]> first = store.put(TEST_KEY, new byte[1]);
       ListenableFuture<byte[]> second = store.put(TEST_KEY, null);
       assertThat(second.get()).isEmpty();
+    }
+  }
+
+  @Test
+  public void putString() throws Exception {
+    try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
+      store.putString(TEST_KEY, "foo").get();
+      assertThat(store.getString(TEST_KEY).get()).isEqualTo("foo");
+      assertThat(store.contains(TEST_KEY).get()).isTrue();
+
+      store.putString(TEST_KEY, "").get();
+      assertThat(store.contains(TEST_KEY).get()).isFalse();
+      assertThat(store.getString(TEST_KEY).get()).isEqualTo("");
+
+      store.putString(TEST_KEY, null).get();
+      assertThat(store.contains(TEST_KEY).get()).isFalse();
+      assertThat(store.getString(TEST_KEY).get()).isEqualTo("");
     }
   }
 

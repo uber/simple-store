@@ -1,7 +1,9 @@
 package com.uber.simplestore.impl;
 
 import android.content.Context;
-import com.google.common.util.concurrent.*;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
@@ -10,6 +12,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -23,6 +26,7 @@ final class SimpleStoreImpl implements SimpleStore {
   private static final int CLOSED = 1;
   private static final int TOMBSTONED = 2;
   private static final byte[] EMPTY_BYTES = new byte[0];
+  private static final Charset STRING_ENCODING = StandardCharsets.UTF_16BE;
 
   private final Context context;
   private final String scope;
@@ -58,9 +62,9 @@ final class SimpleStoreImpl implements SimpleStore {
         get(key),
         (bytes) -> {
           if (bytes != null && bytes.length > 0) {
-            return new String(bytes, Charset.defaultCharset());
+            return new String(bytes, STRING_ENCODING);
           } else {
-            return null;
+            return "";
           }
         },
         MoreExecutors.directExecutor());
@@ -68,7 +72,12 @@ final class SimpleStoreImpl implements SimpleStore {
 
   @Override
   public ListenableFuture<String> putString(String key, @Nullable String value) {
-    byte[] bytes = value != null ? value.getBytes(Charset.defaultCharset()) : null;
+    byte[] bytes;
+    if (value == null || value.isEmpty()) {
+      bytes = null;
+    } else {
+      bytes = value.getBytes(STRING_ENCODING);
+    }
     return Futures.transform(put(key, bytes), (b) -> value, MoreExecutors.directExecutor());
   }
 
@@ -131,6 +140,12 @@ final class SimpleStoreImpl implements SimpleStore {
         get(key),
         (value) -> value != null && value.length > 0,
         SimpleStoreConfig.getComputationExecutor());
+  }
+
+  @Override
+  public ListenableFuture<Void> remove(String key) {
+    return Futures.transform(
+        put(key, null), (ignored) -> null, SimpleStoreConfig.getComputationExecutor());
   }
 
   @Override

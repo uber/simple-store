@@ -1,6 +1,7 @@
 package com.uber.simplestore.impl;
 
 import android.content.Context;
+import com.google.common.annotations.VisibleForTesting;
 import com.uber.simplestore.ScopeConfig;
 import com.uber.simplestore.SimpleStore;
 import java.util.HashMap;
@@ -61,7 +62,8 @@ public final class SimpleStoreFactory {
     }
   }
 
-  static void crashIfAnyOpen() {
+  @VisibleForTesting
+  public static void crashIfAnyOpen() {
     synchronized (scopesLock) {
       for (Map.Entry<String, SimpleStoreImpl> e : scopes.entrySet()) {
         if (e.getValue().available.get() == 0) {
