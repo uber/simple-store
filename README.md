@@ -1,4 +1,7 @@
 # Simple Store
+
+[![Build Status](https://travis-ci.com/uber/simple-store.svg?token=vUDcZtk6T5yr64PuQJP1&branch=master)](https://travis-ci.com/uber/simple-store)
+
 Simple yet performant asynchronous file storage for Android.
 
 SimpleStore aims to provide developers an extremely robust and performant solution for storing key-value data on disk asynchronously. It is built using only Android and Java primitives and avoids taking on external dependencies making it ideal for critical startup storage. It has no opinion on how data is serialized, only storing `string`-`byte[]` pairs of small to moderate size. The core library only exposes a thread-safe, executor-explicit async API ensuring clear thread selection and no UI jank.
