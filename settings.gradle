@@ -19,4 +19,4 @@ pluginManagement {
     }
 }
 
-include ':simplestore', ':protosimplestore', ':testing'
+include ':simplestore', ':protosimplestore', ':testing', ':sample'

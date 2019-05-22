@@ -28,8 +28,8 @@ dependencies {
     implementation deps.external.guavaAndroid
     implementation deps.external.findBugs
 
-    testCompile deps.test.junit
-    testCompile deps.test.truth
+    testImplementation deps.test.junit
+    testImplementation deps.test.truth
 }
 
 apply plugin: 'com.vanniktech.maven.publish'

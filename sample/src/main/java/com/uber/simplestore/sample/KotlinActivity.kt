@@ -1,21 +1,23 @@
 package com.uber.simplestore.sample
 
-import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.appcompat.app.AppCompatActivity
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 
 import com.uber.simplestore.impl.SimpleStoreFactory
 import com.uber.simplestore.ScopeConfig
 import com.uber.simplestore.SimpleStore
+import com.uber.simplestore.executors.StorageExecutors.mainExecutor as mainExecutor
 
 
-class KotlinActivity : Activity() {
+@Suppress("UnstableApiUsage")
+class KotlinActivity : AppCompatActivity() {
     private lateinit var textView: TextView
     private lateinit var simpleStore: SimpleStore
     private lateinit var editText: EditText
@@ -33,7 +35,7 @@ class KotlinActivity : Activity() {
         button.setOnClickListener { saveMessage() }
         findViewById<View>(R.id.activity_main_nest).setOnClickListener {
             val intent = Intent(this, KotlinActivity::class.java)
-            intent.putExtra(Companion.SCOPE_EXTRA, scope + 1)
+            intent.putExtra(SCOPE_EXTRA, scope + 1)
             startActivity(intent)
         }
         findViewById<View>(R.id.activity_main_clear)
@@ -46,7 +48,7 @@ class KotlinActivity : Activity() {
                     override fun onFailure(t: Throwable) {
                         textView.text = t.toString()
                     }
-                }, mainExecutor)
+                }, mainExecutor())
             }
         initialize()
     }
@@ -57,7 +59,7 @@ class KotlinActivity : Activity() {
             nesting.append("/nest")
         }
         Log.e("Test", nesting.toString())
-        simpleStore = SimpleStoreFactory.create(this, "main" + nesting.toString(), ScopeConfig.DEFAULT)
+        simpleStore = SimpleStoreFactory.create(this, "main$nesting", ScopeConfig.DEFAULT)
         loadMessage()
     }
 
@@ -80,7 +82,7 @@ class KotlinActivity : Activity() {
                     editText.isEnabled = true
                 }
             },
-            mainExecutor
+            mainExecutor()
         )
     }
 
@@ -93,7 +95,7 @@ class KotlinActivity : Activity() {
             override fun onFailure(t: Throwable) {
                 textView.text = t.toString()
             }
-        }, mainExecutor)
+        }, mainExecutor())
     }
 
     override fun onDestroy() {
