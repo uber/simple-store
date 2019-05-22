@@ -16,6 +16,7 @@
 package com.uber.simplestore.impl;
 
 import android.content.Context;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -101,7 +102,7 @@ final class SimpleStoreImpl implements SimpleStore {
     requireOpen();
     return Futures.submitAsync(
         () -> {
-          if (isClosed()) {
+          if (isTombstoned()) {
             return Futures.immediateFailedFuture(new StoreClosedException());
           }
           byte[] value;
@@ -128,7 +129,7 @@ final class SimpleStoreImpl implements SimpleStore {
     requireOpen();
     return Futures.submitAsync(
         () -> {
-          if (isClosed()) {
+          if (isTombstoned()) {
             return Futures.immediateFailedFuture(new StoreClosedException());
           }
           if (value == null || value.length == 0) {
@@ -168,7 +169,7 @@ final class SimpleStoreImpl implements SimpleStore {
     requireOpen();
     return Futures.submitAsync(
         () -> {
-          if (isClosed()) {
+          if (isTombstoned()) {
             return Futures.immediateFailedFuture(new StoreClosedException());
           }
           try {
@@ -203,6 +204,11 @@ final class SimpleStoreImpl implements SimpleStore {
     }
   }
 
+  @VisibleForTesting
+  Executor getOrderedExecutor() {
+    return orderedIoExecutor;
+  }
+
   boolean tombstone() {
     return available.compareAndSet(CLOSED, TOMBSTONED);
   }
@@ -215,8 +221,8 @@ final class SimpleStoreImpl implements SimpleStore {
     return available.compareAndSet(CLOSED, OPEN);
   }
 
-  private boolean isClosed() {
-    return available.get() > OPEN;
+  private boolean isTombstoned() {
+    return available.get() > CLOSED;
   }
 
   private void deleteFile(String key) {
