@@ -47,7 +47,6 @@ protobuf {
 
 dependencies {
     implementation project(":simplestore")
-    implementation deps.support.appCompat
     implementation deps.external.findBugs
     implementation deps.external.protoLite
 

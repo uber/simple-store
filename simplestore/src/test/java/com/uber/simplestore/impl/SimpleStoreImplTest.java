@@ -106,15 +106,16 @@ public final class SimpleStoreImplTest {
                 try {
                   // very very slow IO.
                   latch.await();
-                } catch (InterruptedException ignored) {
-
+                } catch (InterruptedException exception) {
+                  fail();
                 }
               });
+      // These futures are never listened to before the store is closed.
       write = store.put(TEST_KEY, new byte[1]);
       read = store.get(TEST_KEY);
     }
     success.get();
-    latch.countDown();
+    latch.countDown(); // Finish the slow operation.
     Futures.addCallback(
         write,
         new FutureCallback<byte[]>() {
