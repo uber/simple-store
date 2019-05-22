@@ -28,6 +28,7 @@ import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.StoreClosedException;
 import java.util.concurrent.CountDownLatch;
+import javax.annotation.Nonnull;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.junit.After;
 import org.junit.Test;
@@ -40,6 +41,9 @@ import org.robolectric.RuntimeEnvironment;
 public final class SimpleStoreImplTest {
 
   private static final String TEST_KEY = "test";
+  private static final byte[] VALUE_ONE = new byte[] {0xA, 0xB};
+  private static final byte[] VALUE_TWO = new byte[] {0x1, 0x2};
+
   private Context context = RuntimeEnvironment.systemContext;
 
   @After
@@ -59,7 +63,7 @@ public final class SimpleStoreImplTest {
   @Test
   public void puttingNullDeletesKey() throws Exception {
     try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
-      ListenableFuture<byte[]> first = store.put(TEST_KEY, new byte[1]);
+      store.put(TEST_KEY, new byte[1]).get();
       ListenableFuture<byte[]> second = store.put(TEST_KEY, null);
       assertThat(second.get()).isEmpty();
     }
@@ -85,57 +89,75 @@ public final class SimpleStoreImplTest {
   @Test
   public void deleteAll() throws Exception {
     try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
-      ListenableFuture<byte[]> first = store.put(TEST_KEY, new byte[1]);
-      ListenableFuture<Void> second = store.deleteAll();
+      store.put(TEST_KEY, new byte[1]).get();
+      store.deleteAll().get();
       ListenableFuture<byte[]> empty = store.get(TEST_KEY);
       assertThat(empty.get()).isEmpty();
     }
   }
 
   @Test
-  public void failsAllOnClose() throws Exception {
+  public void operationsBeforeCloseSucceed() throws Exception {
     ListenableFuture<byte[]> success;
-    ListenableFuture<byte[]> read;
-    ListenableFuture<byte[]> write;
-    CountDownLatch latch = new CountDownLatch(1);
+    CountDownLatch latch;
     try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
-      success = store.put(TEST_KEY, new byte[1]);
-      SimpleStoreConfig.getIOExecutor()
-          .execute(
-              () -> {
-                try {
-                  // very very slow IO.
-                  latch.await();
-                } catch (InterruptedException ignored) {
+      success = store.put(TEST_KEY, VALUE_ONE);
+      latch = enqueueBlockingOperation(store);
+      // These callbacks are enqueued behind the slow write.
+      Futures.addCallback(
+          store.put(TEST_KEY, VALUE_TWO),
+          new FutureCallback<byte[]>() {
+            @Override
+            public void onSuccess(@NullableDecl byte[] result) {
+              assertThat(result).isEqualTo(VALUE_TWO);
+            }
 
-                }
-              });
-      write = store.put(TEST_KEY, new byte[1]);
-      read = store.get(TEST_KEY);
+            @Override
+            public void onFailure(@Nonnull Throwable t) {
+              fail(t.toString());
+            }
+          },
+          directExecutor());
+      Futures.addCallback(
+          store.get(TEST_KEY),
+          new FutureCallback<byte[]>() {
+            @Override
+            public void onSuccess(@NullableDecl byte[] result) {
+              assertThat(result).isEqualTo(VALUE_TWO);
+            }
+
+            @Override
+            public void onFailure(@Nonnull Throwable t) {
+              fail(t.toString());
+            }
+          },
+          directExecutor());
+      // This future is listened to.
+      assertThat(success.get()).isEqualTo(VALUE_ONE);
     }
-    success.get();
-    latch.countDown();
-    Futures.addCallback(
-        write,
-        new FutureCallback<byte[]>() {
-          @Override
-          public void onSuccess(@NullableDecl byte[] result) {
-            fail("write succeeded");
-          }
-
-          @Override
-          public void onFailure(Throwable t) {
-            assertThat(t.getClass()).isEqualTo(StoreClosedException.class);
-          }
-        },
-        directExecutor());
-    assertThat(Futures.successfulAsList(write, read).get()).containsExactly(null, null);
+    latch.countDown(); // Finish the slow operation.
   }
 
   @Test
-  public void closes() {
+  public void operationsAfterCloseFail() throws Exception {
     SimpleStore store = SimpleStoreFactory.create(context, "");
+    ListenableFuture<byte[]> success = store.put(TEST_KEY, VALUE_ONE);
+    CountDownLatch latch = enqueueBlockingOperation(store);
     store.close();
+    try {
+      ListenableFuture<byte[]> badPut = store.put(TEST_KEY, VALUE_TWO);
+      fail("Put after close succeeded");
+      badPut.get();
+    } catch (StoreClosedException ignored) {
+      // expect failure
+    }
+
+    assertThat(success.get()).isEqualTo(VALUE_ONE); // doesn't matter when we get this
+
+    try (SimpleStore storeTwo = SimpleStoreFactory.create(context, "")) {
+      latch.countDown(); // simulate the close having been blocked on slow IO.
+      assertThat(storeTwo.get(TEST_KEY).get()).isEqualTo(VALUE_ONE);
+    }
   }
 
   @Test
@@ -169,5 +191,21 @@ public final class SimpleStoreImplTest {
         }
       }
     }
+  }
+
+  private CountDownLatch enqueueBlockingOperation(SimpleStore store) {
+    CountDownLatch latch = new CountDownLatch(1);
+    ((SimpleStoreImpl) store)
+        .getOrderedExecutor()
+        .execute(
+            () -> {
+              try {
+                // very very slow IO.
+                latch.await();
+              } catch (InterruptedException exception) {
+                throw new RuntimeException(exception);
+              }
+            });
+    return latch;
   }
 }

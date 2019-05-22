@@ -17,7 +17,11 @@ package com.uber.simplestore;
 
 /** Configure the store for a scope. */
 public final class ScopeConfig {
-  /** No-op currently. */
+  /**
+   * Marks a scope as performance & integrity critical.
+   *
+   * <p>Bypasses future memory use optimizations.
+   */
   public static final ScopeConfig CRITICAL = new ScopeConfig();
 
   /**
