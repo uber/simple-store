@@ -102,7 +102,6 @@ public class SimpleProtoStoreImplTest {
         fail();
       } catch (InvalidProtocolBufferException e) {
         // expected
-        assertThat(e).hasMessageThat().contains("invalid wire type");
       }
     }
   }
