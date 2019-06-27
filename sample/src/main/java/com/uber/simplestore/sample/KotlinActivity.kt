@@ -10,16 +10,17 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 
-import com.uber.simplestore.impl.SimpleStoreFactory
 import com.uber.simplestore.ScopeConfig
-import com.uber.simplestore.SimpleStore
+import com.uber.simplestore.proto.Demo
+import com.uber.simplestore.proto.SimpleProtoStore
+import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory
 import com.uber.simplestore.executors.StorageExecutors.mainExecutor as mainExecutor
 
 
 @Suppress("UnstableApiUsage")
 class KotlinActivity : AppCompatActivity() {
     private lateinit var textView: TextView
-    private lateinit var simpleStore: SimpleStore
+    private lateinit var simpleStore: SimpleProtoStore
     private lateinit var editText: EditText
     private lateinit var button: View
     private var scope = 0
@@ -59,17 +60,18 @@ class KotlinActivity : AppCompatActivity() {
             nesting.append("/nest")
         }
         Log.e("Test", nesting.toString())
-        simpleStore = SimpleStoreFactory.create(this, "main$nesting", ScopeConfig.DEFAULT)
+        simpleStore = SimpleProtoStoreFactory.create(this, "main$nesting", ScopeConfig.DEFAULT)
         loadMessage()
     }
 
     private fun saveMessage() {
         button.isEnabled = false
         editText.isEnabled = false
+        val proto = Demo.Data.newBuilder().setField(editText.text.toString()).build()
         Futures.addCallback(
-            simpleStore.putString("some_thing", editText.text.toString()),
-            object : FutureCallback<String> {
-                override fun onSuccess(s: String?) {
+            simpleStore.put("some_thing", proto),
+            object : FutureCallback<Demo.Data> {
+                override fun onSuccess(s: Demo.Data?) {
                     editText.setText("")
                     button.isEnabled = true
                     editText.isEnabled = true
@@ -87,9 +89,9 @@ class KotlinActivity : AppCompatActivity() {
     }
 
     private fun loadMessage() {
-        Futures.addCallback(simpleStore.getString("some_thing"), object : FutureCallback<String> {
-            override fun onSuccess(msg: String?) {
-                textView.text = msg
+        Futures.addCallback(simpleStore.get("some_thing", Demo.Data.parser()), object : FutureCallback<Demo.Data> {
+            override fun onSuccess(msg: Demo.Data?) {
+                textView.text = msg?.field
             }
 
             override fun onFailure(t: Throwable) {

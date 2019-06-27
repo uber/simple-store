@@ -29,14 +29,16 @@ import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.uber.simplestore.ScopeConfig;
-import com.uber.simplestore.SimpleStore;
-import com.uber.simplestore.impl.SimpleStoreFactory;
+import com.uber.simplestore.proto.Demo;
+import com.uber.simplestore.proto.SimpleProtoStore;
+import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
 
+@SuppressWarnings("UnstableApiUsage")
 public class JavaActivity extends AppCompatActivity {
 
   private static final String SCOPE_EXTRA = "scope";
   private TextView textView;
-  private SimpleStore simpleStore;
+  private SimpleProtoStore simpleStore;
   private EditText editText;
   private View button;
   int scope = 0;
@@ -84,20 +86,21 @@ public class JavaActivity extends AppCompatActivity {
       nesting.append("/nest");
     }
     Log.w("Nesting: ", nesting.toString());
-    simpleStore = SimpleStoreFactory.create(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
+    simpleStore =
+        SimpleProtoStoreFactory.create(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
     loadMessage();
   }
 
   private void saveMessage() {
     button.setEnabled(false);
     editText.setEnabled(false);
-    ListenableFuture<String> put =
-        simpleStore.putString("some_thing", editText.getText().toString());
+    Demo.Data proto = Demo.Data.newBuilder().setField(editText.getText().toString()).build();
+    ListenableFuture<Demo.Data> put = simpleStore.put("some_thing", proto);
     Futures.addCallback(
         put,
-        new FutureCallback<String>() {
+        new FutureCallback<Demo.Data>() {
           @Override
-          public void onSuccess(@NonNull String s) {
+          public void onSuccess(Demo.Data s) {
             editText.setText("");
             button.setEnabled(true);
             editText.setEnabled(true);
@@ -117,11 +120,11 @@ public class JavaActivity extends AppCompatActivity {
 
   private void loadMessage() {
     Futures.addCallback(
-        simpleStore.getString("some_thing"),
-        new FutureCallback<String>() {
+        simpleStore.get("some_thing", Demo.Data.parser()),
+        new FutureCallback<Demo.Data>() {
           @Override
-          public void onSuccess(@NonNull String msg) {
-            textView.setText(msg);
+          public void onSuccess(Demo.Data msg) {
+            textView.setText(msg.getField());
           }
 
           @Override
