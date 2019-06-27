@@ -50,8 +50,12 @@ def androidx = [
 
 def test = [
         junit      : 'junit:junit:4.12',
-        truth      : 'com.google.truth:truth:0.43',
-        robolectric: 'org.robolectric:robolectric:4.2'
+        truth      : 'com.google.truth:truth:0.46',
+        robolectric: 'org.robolectric:robolectric:4.2',
+        espresso   : 'androidx.test.espresso:espresso-core:3.2.0',
+        runner     : 'androidx.test:runner:1.2.0',
+        rules      : 'androidx.test:rules:1.2.0',
+        orchestrator : 'androidx.test:orchestrator:1.2.0',
 ]
 
 def kotlin = [
