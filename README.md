@@ -10,6 +10,14 @@ All values are stored on disk as plain files that are “scoped” to a matching
 
 ## Basic usage
 
+To include in a gradle project, add to your dependencies:
+
+```
+dependencies {
+    implementation 'com.uber.simplestore:simplestore:0.0.5'
+}
+```
+
 Out of the box, SimpleStore uses `ListenableFuture` to store `byte[]`, `String`, primitives and protocol buffers on internal storage. Note that if you use RxJava, it comes with a `fromFuture` method that allows you to wrap `ListenableFuture`.
 
 ```java
@@ -69,4 +77,20 @@ In the future, we can arbitrarily clear portions of the memory cache of an open 
 All operations are guaranteed to be executed in-order within the same scope. A singular cached thread pool backs all stores process wide, and can be replaced with a custom executor via a static configuration method. It is safe to enqueue any operation from any thread, including the main thread. All future callbacks are paired with an executor to be run on, this forces parsing or other processing actions to get out of the way of ordered disk I/O.
 
 This model makes deadlock across scopes impossible, as even a blockingGet cannot be issued on the ordered IO executor. Adopting this model leaves us room to experiment later with using explicit thread priority for different scopes.
+
+## License
+
+    Copyright (C) 2019 Uber Technologies
+
+    Licensed under the Apache License, Version 2.0 (the "License");
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an "AS IS" BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.
 
