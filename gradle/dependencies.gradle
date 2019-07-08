@@ -65,7 +65,7 @@ def kotlin = [
 def external = [
         guavaAndroid: 'com.google.guava:guava:27.0.1-android',
         findBugs    : 'com.google.code.findbugs:jsr305:3.0.2',
-        protoLite   : 'com.google.protobuf:protobuf-javalite:3.8.0-rc-1',
+        protoLite   : 'com.google.protobuf:protobuf-javalite:3.8.0',
         protoc      : '3.8.0',
 ]
 
