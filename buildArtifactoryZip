@@ -1,8 +1,8 @@
 #!/bin/bash
-VERSION="0.0.4"
-./gradlew protosimplestore:uploadArchives
-./gradlew simplestore:uploadArchives
-./gradlew testing:uploadArchives
+VERSION="0.0.5"
+./gradlew protosimplestore:installArchives
+./gradlew simplestore:installArchives
+./gradlew testing:installArchives
 
 mkdir -p com/uber/simplestore/simplestore/$VERSION
 cp simplestore/build/poms/pom-default.xml com/uber/simplestore/simplestore/$VERSION/simplestore-$VERSION.pom
