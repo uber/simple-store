@@ -11,6 +11,16 @@ android {
     defaultConfig {
         minSdkVersion deps.build.minSdkVersion
         targetSdkVersion deps.build.targetSdkVersion
+
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+        // The following argument makes the Android Test Orchestrator run its
+        // "pm clear" command after each test invocation. This command ensures
+        // that the app's state is completely cleared between tests.
+        testInstrumentationRunnerArguments clearPackageData: 'true'
+    }
+
+    testOptions {
+        execution 'ANDROIDX_TEST_ORCHESTRATOR'
     }
 
     defaultConfig {
@@ -47,6 +57,11 @@ dependencies {
     testImplementation deps.test.junit
     testImplementation deps.test.truth
     testImplementation deps.test.robolectric
+
+    androidTestImplementation deps.test.runner
+    androidTestImplementation deps.test.rules
+
+    androidTestUtil deps.test.orchestrator
 }
 
 apply plugin: 'com.vanniktech.maven.publish'
