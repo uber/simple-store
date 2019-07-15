@@ -3,6 +3,9 @@ language: android
 jdk:
   - oraclejdk8
 
+before_script:
+  - "curl -H 'Cache-Control: no-cache' https://raw.githubusercontent.com/fossas/fossa-cli/master/install.sh | sudo bash"
+
 before_install:
   # Install SDK license so Android Gradle plugin can install deps.
   - mkdir "$ANDROID_HOME/licenses" || true
@@ -15,6 +18,8 @@ install: ./gradlew build --stacktrace
 
 script:
 - ./gradlew check --stacktrace
+- fossa init
+- fossa analyze
 
 after_success:
 - .buildscript/deploy_snapshot.sh
