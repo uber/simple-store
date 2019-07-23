@@ -1,6 +1,7 @@
 # Simple Store
 
 [![Build Status](https://travis-ci.com/uber/simple-store.svg?token=vUDcZtk6T5yr64PuQJP1&branch=master)](https://travis-ci.com/uber/simple-store)
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3000/badge)](https://bestpractices.coreinfrastructure.org/projects/3000)
 
 This project is stable and being incubated for long-term support.
 
