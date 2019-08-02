@@ -29,6 +29,7 @@ script:
 - fossa analyze
 
 after_success:
+- .buildscript/push_javadocs.sh
 - .buildscript/deploy_snapshot.sh
 
 branches:
