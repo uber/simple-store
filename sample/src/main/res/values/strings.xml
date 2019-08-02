@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">SimpleStore Sample</string>
+    <string name="kotlin_name">SimpleStore Kotlin</string>
 </resources>

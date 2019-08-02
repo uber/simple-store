@@ -21,8 +21,24 @@ android {
     }
 }
 
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${deps.external.protoc}"
+    }
+    generateProtoTasks {
+        all().each { task ->
+            task.builtins {
+                java {
+                    option 'lite'
+                }
+            }
+        }
+    }
+}
+
 dependencies {
     implementation deps.androidx.appCompat
+    implementation deps.external.protoLite
     implementation deps.kotlin.stdLibJdk8
 
     implementation project(":simplestore")
