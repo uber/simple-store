@@ -24,6 +24,7 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("UnstableApiUsage")
 public final class FakeSimpleStore implements SimpleStore {
 
   private boolean closed = false;
@@ -41,12 +42,7 @@ public final class FakeSimpleStore implements SimpleStore {
 
   @Override
   public ListenableFuture<String> getString(String key) {
-    String value;
-    if (data.containsKey(key)) {
-      value = new String(data.get(key), Charset.defaultCharset());
-    } else {
-      value = null;
-    }
+    String value = new String(getBytes(key), Charset.defaultCharset());
     return returnOrFail(value);
   }
 
@@ -62,7 +58,7 @@ public final class FakeSimpleStore implements SimpleStore {
 
   @Override
   public ListenableFuture<byte[]> get(String key) {
-    return returnOrFail(data.get(key));
+    return returnOrFail(getBytes(key));
   }
 
   @Override
@@ -95,6 +91,16 @@ public final class FakeSimpleStore implements SimpleStore {
   public ListenableFuture<Void> remove(String key) {
     data.remove(key);
     return returnOrFail(null);
+  }
+
+  private byte[] getBytes(String key) {
+    if (data.containsKey(key)) {
+      byte[] value = data.get(key);
+      if (value != null) {
+        return value;
+      }
+    }
+    return new byte[] {};
   }
 
   private <T> ListenableFuture<T> returnOrFail(@Nullable T value) {

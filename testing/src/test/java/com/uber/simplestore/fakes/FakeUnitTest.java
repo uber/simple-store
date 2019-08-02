@@ -44,6 +44,14 @@ public class FakeUnitTest {
   }
 
   @Test
+  public void handlesAbsence() throws Exception {
+    SimpleStore store = new FakeSimpleStore();
+    assertThat(store.getString(TEST_KEY).get()).isEqualTo("");
+    assertThat(store.get(TEST_KEY).get()).hasLength(0);
+    assertThat(store.contains(TEST_KEY).get()).isFalse();
+  }
+
+  @Test
   public void throwsAfterClose() throws Exception {
     SimpleStore store = new FakeSimpleStore();
     store.close();
