@@ -1,0 +1,16 @@
+site_name: SimpleStore
+repo_name: SimpleStore
+repo_url: https://github.com/uber/simple-store
+site_description: "Simple yet performant asynchronous file storage for Android"
+site_author: Uber Technologies
+remote_branch: gh-pages
+
+copyright: 'Copyright &copy; 2019 Uber Technologies'
+
+theme:
+  name: 'material'
+  favicon: images/uber_oss_logo.png
+  logo: images/uber_oss_logo.png
+  palette:
+    primary: 'white'
+    accent: 'white'
