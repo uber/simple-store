@@ -3,7 +3,7 @@
 [![Build Status](https://travis-ci.com/uber/simple-store.svg?token=vUDcZtk6T5yr64PuQJP1&branch=master)](https://travis-ci.com/uber/simple-store)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3000/badge)](https://bestpractices.coreinfrastructure.org/projects/3000)
 [![Maven Central](https://img.shields.io/maven-central/v/com.uber.simplestore/simplestore.svg)](https://search.maven.org/artifact/com.uber.simplestore/simplestore)
-[![Maven Central](https://img.shields.io/maven-central/v/com.uber.simplestore/protosimplestore.svg)](https://search.maven.org/artifact/com.uber.simplestore/protosimplestore)
+[![Maven Central](https://img.shields.io/maven-central/v/com.uber.simplestore/simplestore-proto.svg)](https://search.maven.org/artifact/com.uber.simplestore/simplestore-proto)
 
 This project is stable and being incubated for long-term support.
 
@@ -20,14 +20,15 @@ To include in a gradle project, add to your dependencies:
 ```
 dependencies {
     implementation 'com.uber.simplestore:simplestore:0.0.5'
+    # If using protocol buffers, also add:
+    implementation 'com.uber.simplestore:simplestore-proto:0.0.5'
 }
 ```
 
-Out of the box, SimpleStore uses `ListenableFuture` to store `byte[]`, `String`, primitives and protocol buffers on internal storage. Note that if you use RxJava, it comes with a `fromFuture` method that allows you to wrap `ListenableFuture`.
-
+Out of the box, SimpleStore uses `ListenableFuture` to store `byte[]`, `String`, primitives and protocol buffers on internal storage. 
 ```java
 SimpleStore simpleStore = SimpleStoreFactory.create(this, "<some-uuid-or-name>");
-ListenableFuture<String> put = simpleStore.putString("some_key", "Foo value);
+ListenableFuture<String> put = simpleStore.putString("some_key", "Foo value");
 Futures.addCallback(
         put,
         new FutureCallback<String>() {
@@ -43,6 +44,13 @@ Futures.addCallback(
         },
         mainExecutor());
 simpleStore.close();
+```
+
+Note that if you use RxJava, Rx comes with a `fromFuture` method that allows you to wrap `ListenableFuture`:
+
+```java
+Single<String> value = Single.fromFuture(simpleStore.getString("some_key"));
+
 ```
 
 ## Fundamentally Async
