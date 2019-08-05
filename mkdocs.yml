@@ -14,3 +14,31 @@ theme:
   palette:
     primary: 'white'
     accent: 'white'
+
+markdown_extensions:
+  - smarty
+  - codehilite:
+      guess_lang: false
+  - footnotes
+  - meta
+  - toc:
+      permalink: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.magiclink
+  - pymdownx.smartsymbols
+  - pymdownx.superfences
+  - tables
+
+nav:
+  - 'Overview': index.md
+  - '0.X API':
+    - 'SimpleStore': 0.x/simplestore/index.md
+    - 'SimpleStore for Protocol Buffers': 0.x/protosimplestore/index.md
+    - 'Testing SimpleStore': 0.x/testing/index.md
+    - 'Sample App': 0.x/sample/index.md
+  - 'Changelog' : changelog.md
+  - 'Contributing': contributing.md
+  - 'Code of Conduct': code-of-conduct.md

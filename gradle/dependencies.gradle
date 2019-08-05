@@ -41,6 +41,8 @@ def build = [
                 nullAway  : '0.2',
                 protobuf  : '0.8.8',
                 spotless  : '3.23.0',
+                mavenPublish : '0.8.0',
+                dokka     : '0.9.18',
         ]
 ]
 

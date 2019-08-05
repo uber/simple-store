@@ -33,6 +33,9 @@ import com.uber.simplestore.proto.Demo;
 import com.uber.simplestore.proto.SimpleProtoStore;
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
 
+/**
+ * Store and retrieve a text field.
+ */
 @SuppressWarnings("UnstableApiUsage")
 public class JavaActivity extends AppCompatActivity {
 

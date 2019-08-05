@@ -14,8 +14,14 @@ buildscript {
         classpath "net.ltgt.gradle:gradle-nullaway-plugin:${deps.build.gradlePlugins.nullAway}"
         classpath "com.diffplug.spotless:spotless-plugin-gradle:${deps.build.gradlePlugins.spotless}"
         classpath "com.google.protobuf:protobuf-gradle-plugin:${deps.build.gradlePlugins.protobuf}"
-        classpath 'com.vanniktech:gradle-maven-publish-plugin:0.8.0'
+        classpath "com.vanniktech:gradle-maven-publish-plugin:${deps.build.gradlePlugins.mavenPublish}"
+        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${deps.build.gradlePlugins.dokka}"
+        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:${deps.build.gradlePlugins.dokka}"
     }
+}
+
+repositories {
+    jcenter()
 }
 
 subprojects {
@@ -27,6 +33,7 @@ subprojects {
 
     apply from: rootProject.file('gradle/dependencies.gradle')
     apply plugin: 'com.diffplug.gradle.spotless'
+    apply plugin: 'org.jetbrains.dokka-android'
     spotless {
         format 'misc', {
             target '**/*.md', '**/.gitignore'

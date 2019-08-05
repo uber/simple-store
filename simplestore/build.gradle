@@ -1,6 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'com.diffplug.gradle.spotless'
+    id 'org.jetbrains.dokka-android'
 }
 
 android {
@@ -45,6 +46,12 @@ dependencies {
     androidTestImplementation deps.test.rules
 
     androidTestUtil deps.test.orchestrator
+}
+
+dokka {
+  outputFormat = 'gfm'
+  outputDirectory = "$rootDir/docs/0.x"
+  sourceDirs = android.sourceSets.main.java.srcDirs
 }
 
 apply plugin: 'com.vanniktech.maven.publish'
