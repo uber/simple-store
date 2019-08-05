@@ -9,7 +9,7 @@ before_script:
 
 android:
   components:
-    - build-tools-29.0.0
+    - build-tools-29.0.2
     - android-29
 
 before_cache:
