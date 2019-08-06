@@ -63,8 +63,13 @@ final class PrimitiveSimpleStoreImpl implements PrimitiveSimpleStore {
   }
 
   @Override
-  public ListenableFuture<Void> deleteAll() {
-    return simpleStore.deleteAll();
+  public ListenableFuture<Void> clear() {
+    return simpleStore.clear();
+  }
+
+  @Override
+  public ListenableFuture<Void> deleteAllNow() {
+    return simpleStore.deleteAllNow();
   }
 
   @Override

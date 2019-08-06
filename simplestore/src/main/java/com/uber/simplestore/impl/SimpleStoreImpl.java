@@ -16,6 +16,7 @@
 package com.uber.simplestore.impl;
 
 import android.content.Context;
+import android.util.Log;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -55,6 +56,7 @@ final class SimpleStoreImpl implements SimpleStore {
   private final Map<String, byte[]> cache = new HashMap<>();
   private final Executor orderedIoExecutor =
       MoreExecutors.newSequentialExecutor(SimpleStoreConfig.getIOExecutor());
+  @Nullable private Exception flush;
 
   SimpleStoreImpl(Context appContext, String namespace, NamespaceConfig config) {
     this.context = appContext;
@@ -103,8 +105,9 @@ final class SimpleStoreImpl implements SimpleStore {
     requireOpen();
     return Futures.submitAsync(
         () -> {
-          if (isTombstoned()) {
-            return Futures.immediateFailedFuture(new StoreClosedException());
+          Exception isDead = isDead();
+          if (isDead != null) {
+            return Futures.immediateFailedFuture(isDead);
           }
           byte[] value;
           if (cache.containsKey(key)) {
@@ -130,8 +133,9 @@ final class SimpleStoreImpl implements SimpleStore {
     requireOpen();
     return Futures.submitAsync(
         () -> {
-          if (isTombstoned()) {
-            return Futures.immediateFailedFuture(new StoreClosedException());
+          Exception isDead = isDead();
+          if (isDead != null) {
+            return Futures.immediateFailedFuture(isDead);
           }
           if (value == null || value.length == 0) {
             cache.put(key, EMPTY_BYTES);
@@ -166,12 +170,13 @@ final class SimpleStoreImpl implements SimpleStore {
   }
 
   @Override
-  public ListenableFuture<Void> deleteAll() {
+  public ListenableFuture<Void> clear() {
     requireOpen();
     return Futures.submitAsync(
         () -> {
-          if (isTombstoned()) {
-            return Futures.immediateFailedFuture(new StoreClosedException());
+          Exception isDead = isDead();
+          if (isDead != null) {
+            return Futures.immediateFailedFuture(isDead);
           }
           try {
             File[] files = Objects.requireNonNull(namespacedDirectory).listFiles(File::isFile);
@@ -190,6 +195,63 @@ final class SimpleStoreImpl implements SimpleStore {
           return Futures.immediateFuture(null);
         },
         orderedIoExecutor);
+  }
+
+  @Override
+  public ListenableFuture<Void> deleteAllNow() {
+    SimpleStoreFactory.flushAndClearRecursive(this);
+
+    return Futures.submitAsync(
+        () -> {
+          if (namespacedDirectory != null) {
+            recursiveDelete(namespacedDirectory);
+          }
+          return Futures.immediateFuture(null);
+        },
+        orderedIoExecutor);
+  }
+
+  /** Only call from the orderedIoExecutor. */
+  void clearCache() {
+    cache.clear();
+  }
+
+  /**
+   * Cause all items in the queue to fail out, then run something before enabling the queue again
+   */
+  void failQueueThenRun(Exception exception, Runnable runnable) {
+    if (flush != null) {
+      throw new IllegalStateException();
+    }
+    this.flush = exception;
+    orderedIoExecutor.execute(
+        () -> {
+          runnable.run();
+          this.flush = null;
+        });
+  }
+
+  void moveAway() {
+    if (namespacedDirectory == null) {
+      return;
+    }
+    File newLocation = new File(namespacedDirectory.getAbsolutePath() + ".bak");
+    if (!namespacedDirectory.renameTo(newLocation)) {
+      Log.e(getClass().getName(), "moveAway rename failed");
+      return;
+    }
+    namespacedDirectory = newLocation;
+  }
+
+  private static void recursiveDelete(File directory) {
+    File[] files = directory.listFiles();
+    if (files != null) {
+      for (File f : files) {
+        recursiveDelete(f);
+      }
+    }
+    //noinspection ResultOfMethodCallIgnored
+    directory.delete();
   }
 
   @Override
@@ -222,8 +284,14 @@ final class SimpleStoreImpl implements SimpleStore {
     return available.compareAndSet(CLOSED, OPEN);
   }
 
-  private boolean isTombstoned() {
-    return available.get() > CLOSED;
+  @Nullable
+  private Exception isDead() {
+    if (available.get() > CLOSED) {
+      return new StoreClosedException();
+    } else if (flush != null) {
+      return flush;
+    }
+    return null;
   }
 
   private void deleteFile(String key) {

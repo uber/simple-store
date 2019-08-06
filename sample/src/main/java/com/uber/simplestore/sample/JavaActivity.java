@@ -65,7 +65,7 @@ public class JavaActivity extends AppCompatActivity {
         .setOnClickListener(
             (v) ->
                 Futures.addCallback(
-                    simpleStore.deleteAll(),
+                    simpleStore.clear(),
                     new FutureCallback<Void>() {
                       @Override
                       public void onSuccess(@NonNull Void result) {

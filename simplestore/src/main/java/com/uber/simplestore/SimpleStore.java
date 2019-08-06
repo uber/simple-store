@@ -15,6 +15,7 @@
  */
 package com.uber.simplestore;
 
+import com.google.common.annotations.Beta;
 import com.google.common.util.concurrent.ListenableFuture;
 import java.io.Closeable;
 import javax.annotation.CheckReturnValue;
@@ -77,7 +78,14 @@ public interface SimpleStore extends Closeable {
 
   /** Delete all keys in this direct namespace. */
   @CheckReturnValue
-  ListenableFuture<Void> deleteAll();
+  ListenableFuture<Void> clear();
+
+  /**
+   * Recursively delete all keys in this scope and child scopes. Fails all outstanding operations on
+   * the stores.
+   */
+  @Beta
+  ListenableFuture<Void> deleteAllNow();
 
   /** Fails all outstanding operations then releases the memory cache. */
   @Override
