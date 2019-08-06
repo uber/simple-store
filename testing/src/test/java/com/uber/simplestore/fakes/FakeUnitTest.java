@@ -44,6 +44,16 @@ public class FakeUnitTest {
   }
 
   @Test
+  public void deleteAll_noChildren() throws Exception {
+    try (SimpleStore store = new FakeSimpleStore()) {
+      store.put(TEST_KEY, new byte[1]).get();
+      store.deleteAll().get();
+      ListenableFuture<byte[]> empty = store.get(TEST_KEY);
+      assertThat(empty.get()).isEmpty();
+    }
+  }
+
+  @Test
   public void handlesAbsence() throws Exception {
     SimpleStore store = new FakeSimpleStore();
     assertThat(store.getString(TEST_KEY).get()).isEqualTo("");

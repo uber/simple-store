@@ -31,12 +31,12 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 /** Asynchronous storage implementation. */
+@SuppressWarnings("UnstableApiUsage")
 final class SimpleStoreImpl implements SimpleStore {
   private static final int OPEN = 0;
   private static final int CLOSED = 1;
@@ -172,23 +172,24 @@ final class SimpleStoreImpl implements SimpleStore {
           if (isTombstoned()) {
             return Futures.immediateFailedFuture(new StoreClosedException());
           }
-          try {
-            File[] files = Objects.requireNonNull(scopedDirectory).listFiles(File::isFile);
-            if (files != null && files.length > 0) {
-              for (File f : files) {
-                //noinspection ResultOfMethodCallIgnored
-                f.delete();
-              }
-            }
-            //noinspection ResultOfMethodCallIgnored
-            scopedDirectory.delete();
-            cache.clear();
-          } catch (Exception e) {
-            return Futures.immediateFailedFuture(e);
+          if (scopedDirectory != null) {
+            recursiveDelete(scopedDirectory);
           }
+          cache.clear();
           return Futures.immediateFuture(null);
         },
         orderedIoExecutor);
+  }
+
+  private static void recursiveDelete(File directory) {
+    File[] files = directory.listFiles();
+    if (files != null && files.length > 0) {
+      for (File f : files) {
+        recursiveDelete(f);
+      }
+    }
+    //noinspection ResultOfMethodCallIgnored
+    directory.delete();
   }
 
   @Override

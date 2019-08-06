@@ -87,10 +87,24 @@ public final class SimpleStoreImplTest {
   }
 
   @Test
-  public void deleteAll() throws Exception {
+  public void deleteAll_noChildren() throws Exception {
     try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
       store.put(TEST_KEY, new byte[1]).get();
       store.deleteAll().get();
+      ListenableFuture<byte[]> empty = store.get(TEST_KEY);
+      assertThat(empty.get()).isEmpty();
+    }
+  }
+
+  @Test
+  public void deleteAll_withChildren() throws Exception {
+    try (SimpleStore store = SimpleStoreFactory.create(context, "parent/child")) {
+      store.put(TEST_KEY, new byte[1]).get();
+    }
+    try (SimpleStore store = SimpleStoreFactory.create(context, "parent")) {
+      store.deleteAll().get();
+    }
+    try (SimpleStore store = SimpleStoreFactory.create(context, "parent/child")) {
       ListenableFuture<byte[]> empty = store.get(TEST_KEY);
       assertThat(empty.get()).isEmpty();
     }

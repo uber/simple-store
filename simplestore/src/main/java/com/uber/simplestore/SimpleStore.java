@@ -75,7 +75,7 @@ public interface SimpleStore extends Closeable {
   @CheckReturnValue
   ListenableFuture<Boolean> contains(String key);
 
-  /** Delete all keys in this direct scope. */
+  /** Recursively delete all keys in this scope and child scopes. */
   @CheckReturnValue
   ListenableFuture<Void> deleteAll();
 
