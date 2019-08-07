@@ -17,10 +17,10 @@ All values are stored on disk as plain files that are “scoped” to a matching
 
 To include in a gradle project, add to your dependencies:
 
-```
+```groovy
 dependencies {
     implementation 'com.uber.simplestore:simplestore:0.0.5'
-    # If using protocol buffers, also add:
+    // If using protocol buffers, also add:
     implementation 'com.uber.simplestore:simplestore-proto:0.0.5'
 }
 ```
