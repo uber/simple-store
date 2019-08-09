@@ -23,7 +23,7 @@ import android.content.Context;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.uber.simplestore.ScopeConfig;
+import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.StoreClosedException;
@@ -161,30 +161,30 @@ public final class SimpleStoreImplTest {
   }
 
   @Test
-  public void scopes() throws Exception {
-    String someScope = "bar";
+  public void namespaces() throws Exception {
+    String someNamespace = "bar";
     String value = "some value";
-    try (SimpleStore scopedBase =
-        SimpleStoreFactory.create(context, someScope, ScopeConfig.DEFAULT)) {
-      ListenableFuture<String> success = scopedBase.putString("foo", value);
+    try (SimpleStore namespacedBase =
+        SimpleStoreFactory.create(context, someNamespace, NamespaceConfig.DEFAULT)) {
+      ListenableFuture<String> success = namespacedBase.putString("foo", value);
       success.get();
     }
 
-    try (SimpleStore scopedFactory =
-        SimpleStoreFactory.create(context, someScope, ScopeConfig.DEFAULT)) {
-      ListenableFuture<String> read = scopedFactory.getString("foo");
+    try (SimpleStore namespacedFactory =
+        SimpleStoreFactory.create(context, someNamespace, NamespaceConfig.DEFAULT)) {
+      ListenableFuture<String> read = namespacedFactory.getString("foo");
       assertThat(read.get()).isEqualTo(value);
     }
   }
 
   @Test
-  public void oneInstancePerScope() {
-    String someScope = "foo";
+  public void oneInstancePerNamespace() {
+    String someNamespace = "foo";
     try (SimpleStore ignoredOuter = SimpleStoreFactory.create(context, "")) {
       try (SimpleStore ignored =
-          SimpleStoreFactory.create(context, someScope, ScopeConfig.DEFAULT)) {
+          SimpleStoreFactory.create(context, someNamespace, NamespaceConfig.DEFAULT)) {
         try {
-          SimpleStoreFactory.create(context, someScope, ScopeConfig.DEFAULT);
+          SimpleStoreFactory.create(context, someNamespace, NamespaceConfig.DEFAULT);
           fail();
         } catch (IllegalStateException e) {
           // expected.

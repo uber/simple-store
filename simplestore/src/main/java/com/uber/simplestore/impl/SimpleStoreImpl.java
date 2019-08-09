@@ -20,7 +20,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.uber.simplestore.ScopeConfig;
+import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.StoreClosedException;
@@ -37,6 +37,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
 /** Asynchronous storage implementation. */
+@SuppressWarnings("UnstableApiUsage")
 final class SimpleStoreImpl implements SimpleStore {
   private static final int OPEN = 0;
   private static final int CLOSED = 1;
@@ -45,8 +46,8 @@ final class SimpleStoreImpl implements SimpleStore {
   private static final Charset STRING_ENCODING = StandardCharsets.UTF_16BE;
 
   private final Context context;
-  private final String scope;
-  @Nullable private File scopedDirectory;
+  private final String namespace;
+  @Nullable private File namespacedDirectory;
 
   AtomicInteger available = new AtomicInteger(OPEN);
 
@@ -55,20 +56,20 @@ final class SimpleStoreImpl implements SimpleStore {
   private final Executor orderedIoExecutor =
       MoreExecutors.newSequentialExecutor(SimpleStoreConfig.getIOExecutor());
 
-  SimpleStoreImpl(Context appContext, String scope, ScopeConfig config) {
+  SimpleStoreImpl(Context appContext, String namespace, NamespaceConfig config) {
     this.context = appContext;
-    this.scope = scope;
+    this.namespace = namespace;
     orderedIoExecutor.execute(
         () -> {
           File directory;
-          if (config.equals(ScopeConfig.CACHE)) {
+          if (config.equals(NamespaceConfig.CACHE)) {
             directory = context.getCacheDir();
           } else {
             directory = context.getFilesDir();
           }
-          scopedDirectory = new File(directory.getAbsolutePath() + "/simplestore/" + scope);
+          namespacedDirectory = new File(directory.getAbsolutePath() + "/simplestore/" + namespace);
           //noinspection ResultOfMethodCallIgnored
-          scopedDirectory.mkdirs();
+          namespacedDirectory.mkdirs();
         });
   }
 
@@ -173,7 +174,7 @@ final class SimpleStoreImpl implements SimpleStore {
             return Futures.immediateFailedFuture(new StoreClosedException());
           }
           try {
-            File[] files = Objects.requireNonNull(scopedDirectory).listFiles(File::isFile);
+            File[] files = Objects.requireNonNull(namespacedDirectory).listFiles(File::isFile);
             if (files != null && files.length > 0) {
               for (File f : files) {
                 //noinspection ResultOfMethodCallIgnored
@@ -181,7 +182,7 @@ final class SimpleStoreImpl implements SimpleStore {
               }
             }
             //noinspection ResultOfMethodCallIgnored
-            scopedDirectory.delete();
+            namespacedDirectory.delete();
             cache.clear();
           } catch (Exception e) {
             return Futures.immediateFailedFuture(e);
@@ -213,8 +214,8 @@ final class SimpleStoreImpl implements SimpleStore {
     return available.compareAndSet(CLOSED, TOMBSTONED);
   }
 
-  String getScope() {
-    return scope;
+  String getNamespace() {
+    return namespace;
   }
 
   boolean openIfClosed() {
@@ -226,14 +227,14 @@ final class SimpleStoreImpl implements SimpleStore {
   }
 
   private void deleteFile(String key) {
-    File baseFile = new File(scopedDirectory, key);
+    File baseFile = new File(namespacedDirectory, key);
     AtomicFile file = new AtomicFile(baseFile);
     file.delete();
   }
 
   @Nullable
   private byte[] readFile(String key) throws IOException {
-    File baseFile = new File(scopedDirectory, key);
+    File baseFile = new File(namespacedDirectory, key);
     AtomicFile file = new AtomicFile(baseFile);
     if (baseFile.exists()) {
       return file.readFully();
@@ -243,7 +244,7 @@ final class SimpleStoreImpl implements SimpleStore {
   }
 
   private void writeFile(String key, byte[] value) throws IOException {
-    File baseFile = new File(scopedDirectory, key);
+    File baseFile = new File(namespacedDirectory, key);
     AtomicFile file = new AtomicFile(baseFile);
     FileOutputStream writer = file.startWrite();
     writer.write(value);

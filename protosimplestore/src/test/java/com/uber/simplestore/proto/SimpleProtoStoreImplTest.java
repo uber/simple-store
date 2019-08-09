@@ -22,7 +22,7 @@ import android.content.Context;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.InvalidProtocolBufferException;
-import com.uber.simplestore.ScopeConfig;
+import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
 import com.uber.simplestore.proto.test.TestProto;
@@ -112,7 +112,8 @@ public class SimpleProtoStoreImplTest {
       simpleStore.put(TEST_KEY, "garbage".getBytes(Charset.defaultCharset())).get();
     }
 
-    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "", ScopeConfig.CACHE)) {
+    try (SimpleProtoStore store =
+        SimpleProtoStoreFactory.create(context, "", NamespaceConfig.CACHE)) {
       TestProto.Basic failed = store.get(TEST_KEY, TestProto.Basic.parser()).get();
       assertThat(failed).isEqualTo(TestProto.Basic.getDefaultInstance());
     }

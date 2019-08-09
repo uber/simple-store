@@ -10,7 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 
-import com.uber.simplestore.ScopeConfig
+import com.uber.simplestore.NamespaceConfig
 import com.uber.simplestore.proto.Demo
 import com.uber.simplestore.proto.SimpleProtoStore
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory
@@ -26,20 +26,20 @@ class KotlinActivity : AppCompatActivity() {
     private lateinit var simpleStore: SimpleProtoStore
     private lateinit var editText: EditText
     private lateinit var button: View
-    private var scope = 0
+    private var namespace = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_kotlin)
-        scope = intent.getIntExtra(SCOPE_EXTRA, 0)
-        title = "Sample Scope $scope"
+        namespace = intent.getIntExtra(NAMESPACE_EXTRA, 0)
+        title = "Sample Namespace $namespace"
         textView = findViewById(R.id.activity_main_text)
         editText = findViewById(R.id.activity_main_edit)
         button = findViewById(R.id.activity_main_save)
         button.setOnClickListener { saveMessage() }
         findViewById<View>(R.id.activity_main_nest).setOnClickListener {
             val intent = Intent(this, KotlinActivity::class.java)
-            intent.putExtra(SCOPE_EXTRA, scope + 1)
+            intent.putExtra(NAMESPACE_EXTRA, namespace + 1)
             startActivity(intent)
         }
         findViewById<View>(R.id.activity_main_clear)
@@ -59,11 +59,11 @@ class KotlinActivity : AppCompatActivity() {
 
     private fun initialize() {
         val nesting = StringBuilder()
-        for (i in 0 until scope) {
+        for (i in 0 until namespace) {
             nesting.append("/nest")
         }
         Log.e("Test", nesting.toString())
-        simpleStore = SimpleProtoStoreFactory.create(this, "main$nesting", ScopeConfig.DEFAULT)
+        simpleStore = SimpleProtoStoreFactory.create(this, "main$nesting", NamespaceConfig.DEFAULT)
         loadMessage()
     }
 
@@ -109,6 +109,6 @@ class KotlinActivity : AppCompatActivity() {
     }
 
     companion object {
-        private const val SCOPE_EXTRA = "scope"
+        private const val NAMESPACE_EXTRA = "namespace"
     }
 }

@@ -29,31 +29,31 @@ import org.junit.runner.RunWith;
 @LargeTest
 public class SanityEspressoTest {
 
-  private static final String TEST_SCOPE = "test_scope";
+  private static final String TEST_NAMESPACE = "test_namespace";
   private static final String KEY_ONE = "key_one";
   private static final String SAMPLE_STRING = "persisted_value";
   private static final byte[] SOME_BYTES = new byte[] {0xD, 0xE, 0xA, 0xD, 0x0, 0xB, 0xE, 0xE, 0xF};
   private Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
 
   @Test
-  public void defaultScope_bytes() throws Exception {
-    SimpleStore store = SimpleStoreFactory.create(context, TEST_SCOPE);
+  public void defaultNamespace_bytes() throws Exception {
+    SimpleStore store = SimpleStoreFactory.create(context, TEST_NAMESPACE);
     store.put(KEY_ONE, SOME_BYTES).get();
     store.close();
 
-    SimpleStore storeTwo = SimpleStoreFactory.create(context, TEST_SCOPE);
+    SimpleStore storeTwo = SimpleStoreFactory.create(context, TEST_NAMESPACE);
     byte[] fromDisk = storeTwo.get(KEY_ONE).get();
     assertEquals(SOME_BYTES, fromDisk);
     storeTwo.close();
   }
 
   @Test
-  public void defaultScope_string() throws Exception {
-    SimpleStore store = SimpleStoreFactory.create(context, TEST_SCOPE);
+  public void defaultNamespace_string() throws Exception {
+    SimpleStore store = SimpleStoreFactory.create(context, TEST_NAMESPACE);
     store.putString(KEY_ONE, SAMPLE_STRING).get();
     store.close();
 
-    SimpleStore storeTwo = SimpleStoreFactory.create(context, TEST_SCOPE);
+    SimpleStore storeTwo = SimpleStoreFactory.create(context, TEST_NAMESPACE);
     String fromDisk = storeTwo.getString(KEY_ONE).get();
     assertEquals(SAMPLE_STRING, fromDisk);
     storeTwo.close();
@@ -61,11 +61,12 @@ public class SanityEspressoTest {
 
   @Test
   public void cache() throws Exception {
-    SimpleStore store = SimpleStoreFactory.create(context, TEST_SCOPE, ScopeConfig.CACHE);
+    SimpleStore store = SimpleStoreFactory.create(context, TEST_NAMESPACE, NamespaceConfig.CACHE);
     store.putString(KEY_ONE, SAMPLE_STRING).get();
     store.close();
 
-    SimpleStore storeTwo = SimpleStoreFactory.create(context, TEST_SCOPE, ScopeConfig.CACHE);
+    SimpleStore storeTwo =
+        SimpleStoreFactory.create(context, TEST_NAMESPACE, NamespaceConfig.CACHE);
     String fromDisk = storeTwo.getString(KEY_ONE).get();
     assertEquals(SAMPLE_STRING, fromDisk);
     storeTwo.close();

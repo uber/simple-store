@@ -15,22 +15,22 @@
  */
 package com.uber.simplestore;
 
-/** Configure the store for a scope. */
-public final class ScopeConfig {
+/** Configure how the store accesses a namespace. */
+public final class NamespaceConfig {
   /**
-   * Marks a scope as performance & integrity critical.
+   * Opens a namespace as performance & integrity critical.
    *
    * <p>Bypasses future memory use optimizations.
    */
-  public static final ScopeConfig CRITICAL = new ScopeConfig();
+  public static final NamespaceConfig CRITICAL = new NamespaceConfig();
 
   /**
    * Use the cache directory.
    *
    * <p>Hides errors due to data corruption by returning a miss.
    */
-  public static final ScopeConfig CACHE = new ScopeConfig();
+  public static final NamespaceConfig CACHE = new NamespaceConfig();
 
   /** Default settings. */
-  public static final ScopeConfig DEFAULT = new ScopeConfig();
+  public static final NamespaceConfig DEFAULT = new NamespaceConfig();
 }

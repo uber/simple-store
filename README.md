@@ -11,7 +11,7 @@ Simple yet performant asynchronous file storage for Android.
 
 SimpleStore aims to provide developers an extremely robust and performant solution for storing key-value data on disk asynchronously. It is built using only Android and Java primitives and avoids taking on external dependencies making it ideal for critical startup storage. It has no opinion on how data is serialized, only storing `string`-`byte[]` pairs of small to moderate size. The core library only exposes a thread-safe, executor-explicit async API ensuring clear thread selection and no UI jank.
 
-All values are stored on disk as plain files that are “scoped” to a matching on-disk folder. The library also supports configuring a scope to store data on a cache or transient partition.
+All values are stored on disk as plain files that are “namespaced” in a matching on-disk folder structure. The library also supports configuring a namespace to store data on a cache or transient partition.
 
 ## Basic usage
 
@@ -65,7 +65,7 @@ Only one interface is exposed for general use. Implementations of the interface 
 
 Usage:
 ```java
-SimpleStore store = SimpleStoreFactory.create(context, “feature/mystuff”, ScopeConfig.DEFAULT);
+SimpleStore store = SimpleStoreFactory.create(context, “feature/mystuff”, NamespaceConfig.DEFAULT);
 ListenableFuture<String> value = store.putString("some_key", value);
 ```
 
@@ -79,17 +79,17 @@ ListenableFuture was chosen over Rx for the implementation as:
 
 The base interface and implementation purposely leave out a synchronous API as disk IO is fundamentally async. A safe-ish synchronous API can be obtained via `Futures#getChecked` if absolutely needed for compatibility reasons, but most users who think they need sync will probably find the Futures helpers adequate for their needs.
 
-## Closing a scope
+## Closing a namespace
 
-SimpleStore is closable per scope, and may only have one open instance per scope process-wide. When a scope is closed, the in-memory cache is destroyed. The store will deliver failures to all pending callbacks when closed. This ensures that the consumer is always notified if data does not make it to disk and can handle the failure appropriately such as logging a non-fatal. Any reads or writes attempted on the store after closure will result in an exception.
+SimpleStore is closable per namespace, and may only have one open instance per namespace process-wide. When a namespace is closed, the in-memory cache is destroyed. The store will deliver failures to all pending callbacks when closed. This ensures that the consumer is always notified if data does not make it to disk and can handle the failure appropriately such as logging a non-fatal. Any reads or writes attempted on the store after closure will result in an exception.
 
-In the future, we can arbitrarily clear portions of the memory cache of an open scope when desired such as when the OS informs of a trim level. Since the API is fully async, consumers will not be janked and will just see original load latencies.
+In the future, we can arbitrarily clear portions of the memory cache of an open namespace when desired such as when the OS informs of a trim level. Since the API is fully async, consumers will not be janked and will just see original load latencies.
 
 ## Threading
 
-All operations are guaranteed to be executed in-order within the same scope. A singular cached thread pool backs all stores process wide, and can be replaced with a custom executor via a static configuration method. It is safe to enqueue any operation from any thread, including the main thread. All future callbacks are paired with an executor to be run on, this forces parsing or other processing actions to get out of the way of ordered disk I/O.
+All operations are guaranteed to be executed in-order within the same namespace. A singular cached thread pool backs all stores process wide, and can be replaced with a custom executor via a static configuration method. It is safe to enqueue any operation from any thread, including the main thread. All future callbacks are paired with an executor to be run on, this forces parsing or other processing actions to get out of the way of ordered disk I/O.
 
-This model makes deadlock across scopes impossible, as even a blockingGet cannot be issued on the ordered IO executor. Adopting this model leaves us room to experiment later with using explicit thread priority for different scopes.
+This model makes deadlock across namespaces impossible, as even a blockingGet cannot be issued on the ordered IO executor. Adopting this model leaves us room to experiment later with using explicit thread priority for different namespaces.
 
 ## License
 

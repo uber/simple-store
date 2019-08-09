@@ -19,7 +19,7 @@ import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.uber.simplestore.ScopeConfig;
+import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import org.junit.After;
@@ -44,7 +44,7 @@ public final class PrimitiveSimpleStoreTest {
   @Test
   public void whenMissingOnDisk_numbers() throws Exception {
     try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(context, "", ScopeConfig.DEFAULT)) {
+        PrimitiveSimpleStoreFactory.create(context, "", NamespaceConfig.DEFAULT)) {
       assertThat(store.contains(TEST_KEY).get()).isFalse();
 
       Integer integer = store.getInt(TEST_KEY).get();
@@ -62,7 +62,7 @@ public final class PrimitiveSimpleStoreTest {
   @Test
   public void whenMissingOnDisk_string() throws Exception {
     try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(context, "", ScopeConfig.DEFAULT)) {
+        PrimitiveSimpleStoreFactory.create(context, "", NamespaceConfig.DEFAULT)) {
       assertThat(store.contains(TEST_KEY).get()).isFalse();
 
       String s = store.getString(TEST_KEY).get();
@@ -76,7 +76,7 @@ public final class PrimitiveSimpleStoreTest {
   @Test
   public void whenMissingOnDisk_boolean() throws Exception {
     try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(context, "", ScopeConfig.DEFAULT)) {
+        PrimitiveSimpleStoreFactory.create(context, "", NamespaceConfig.DEFAULT)) {
       assertThat(store.contains(TEST_KEY).get()).isFalse();
 
       boolean b = store.getBoolean(TEST_KEY).get();
