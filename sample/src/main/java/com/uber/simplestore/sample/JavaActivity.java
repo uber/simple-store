@@ -28,7 +28,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.uber.simplestore.ScopeConfig;
+import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.proto.Demo;
 import com.uber.simplestore.proto.SimpleProtoStore;
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
@@ -37,19 +37,19 @@ import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
 @SuppressWarnings("UnstableApiUsage")
 public class JavaActivity extends AppCompatActivity {
 
-  private static final String SCOPE_EXTRA = "scope";
+  private static final String NAMESPACE_EXTRA = "namespace";
   private TextView textView;
   private SimpleProtoStore simpleStore;
   private EditText editText;
   private View button;
-  int scope = 0;
+  int namespace = 0;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_java);
-    scope = getIntent().getIntExtra(SCOPE_EXTRA, 0);
-    setTitle("Sample Scope " + scope);
+    namespace = getIntent().getIntExtra(NAMESPACE_EXTRA, 0);
+    setTitle("Sample Namespace " + namespace);
     textView = findViewById(R.id.activity_main_text);
     editText = findViewById(R.id.activity_main_edit);
     button = findViewById(R.id.activity_main_save);
@@ -58,7 +58,7 @@ public class JavaActivity extends AppCompatActivity {
         .setOnClickListener(
             (v) -> {
               Intent intent = new Intent(this, JavaActivity.class);
-              intent.putExtra(SCOPE_EXTRA, scope + 1);
+              intent.putExtra(NAMESPACE_EXTRA, namespace + 1);
               startActivity(intent);
             });
     findViewById(R.id.activity_main_clear)
@@ -83,12 +83,12 @@ public class JavaActivity extends AppCompatActivity {
 
   private void initialize() {
     StringBuilder nesting = new StringBuilder();
-    for (int i = 0; i < scope; i++) {
+    for (int i = 0; i < namespace; i++) {
       nesting.append("/nest");
     }
     Log.w("Nesting: ", nesting.toString());
     simpleStore =
-        SimpleProtoStoreFactory.create(this, "main" + nesting.toString(), ScopeConfig.DEFAULT);
+        SimpleProtoStoreFactory.create(this, "main" + nesting.toString(), NamespaceConfig.DEFAULT);
     loadMessage();
   }
 

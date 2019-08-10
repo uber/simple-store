@@ -17,72 +17,79 @@ package com.uber.simplestore.impl;
 
 import android.content.Context;
 import com.google.common.annotations.VisibleForTesting;
-import com.uber.simplestore.ScopeConfig;
+import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.concurrent.GuardedBy;
 
-/** Obtain an instance of a storage scope. Only one instance per scope may exist at any time. */
+/**
+ * Obtain a SimpleStore interface that can read and write into a namespace.
+ *
+ * <p>Only one instance per namespace may exist at any time to guarentee FIFO-ordering within the
+ * namespace. A namespace is a set of /-delimited strings that refer to a logical location on disk.
+ * It is recommended a random UUID be used to both prevent collisions and to obfuscate the contents
+ * on disk from rooted users.
+ */
 public final class SimpleStoreFactory {
 
-  private static final Object scopesLock = new Object();
+  private static final Object namespacesLock = new Object();
 
-  @GuardedBy("scopesLock")
-  private static Map<String, SimpleStoreImpl> scopes = new HashMap<>();
+  @GuardedBy("namespacesLock")
+  private static Map<String, SimpleStoreImpl> namespaces = new HashMap<>();
 
   /**
-   * Obtain a store for a scope with default configuration.
+   * Obtain a store for a namespace with default configuration.
    *
    * @param context to store in
-   * @param scope slash-delimited scope
+   * @param namespace forward-slash delimited logical address
    * @return open store
    */
-  public static SimpleStore create(Context context, String scope) {
-    return create(context, scope, ScopeConfig.DEFAULT);
+  public static SimpleStore create(Context context, String namespace) {
+    return create(context, namespace, NamespaceConfig.DEFAULT);
   }
 
   /**
-   * Obtain a store for a scope.
+   * Obtain a store for a namespace.
    *
    * @param context to store in
-   * @param scope slash-delimited scope
+   * @param namespace forward-slash delimited logical address
    * @param config to use
    * @return open store
    */
-  public static SimpleStore create(Context context, String scope, ScopeConfig config) {
+  public static SimpleStore create(Context context, String namespace, NamespaceConfig config) {
     Context appContext = context.getApplicationContext();
     SimpleStoreImpl store;
-    synchronized (scopesLock) {
-      if (scopes.containsKey(scope)) {
-        store = scopes.get(scope);
+    synchronized (namespacesLock) {
+      if (namespaces.containsKey(namespace)) {
+        store = namespaces.get(namespace);
         if (!Objects.requireNonNull(store).openIfClosed()) {
           // Never let two references be issued.
-          throw new IllegalStateException("scope '" + scope + "' already open");
+          throw new IllegalStateException("namespace '" + namespace + "' already open");
         }
       } else {
-        store = new SimpleStoreImpl(appContext, scope, config);
-        scopes.put(scope, store);
+        store = new SimpleStoreImpl(appContext, namespace, config);
+        namespaces.put(namespace, store);
       }
     }
     return store;
   }
 
   static void tombstone(SimpleStoreImpl store) {
-    synchronized (scopesLock) {
+    synchronized (namespacesLock) {
       if (store.tombstone()) {
-        scopes.remove(store.getScope());
+        namespaces.remove(store.getNamespace());
       }
     }
   }
 
   @VisibleForTesting
   public static void crashIfAnyOpen() {
-    synchronized (scopesLock) {
-      for (Map.Entry<String, SimpleStoreImpl> e : scopes.entrySet()) {
+    synchronized (namespacesLock) {
+      for (Map.Entry<String, SimpleStoreImpl> e : namespaces.entrySet()) {
         if (e.getValue().available.get() == 0) {
-          throw new IllegalStateException("Leaked scope " + e.getKey());
+          throw new IllegalStateException("Leaked namespace " + e.getKey());
         }
       }
     }

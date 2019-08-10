@@ -21,7 +21,7 @@ import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.google.protobuf.MessageLite;
 import com.google.protobuf.Parser;
-import com.uber.simplestore.ScopeConfig;
+import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.proto.SimpleProtoStore;
@@ -30,9 +30,9 @@ import javax.annotation.Nullable;
 @SuppressWarnings("UnstableApiUsage")
 public final class SimpleProtoStoreImpl implements SimpleProtoStore {
   private final SimpleStore simpleStore;
-  private final ScopeConfig config;
+  private final NamespaceConfig config;
 
-  SimpleProtoStoreImpl(SimpleStore simpleStore, ScopeConfig config) {
+  SimpleProtoStoreImpl(SimpleStore simpleStore, NamespaceConfig config) {
     this.simpleStore = simpleStore;
     this.config = config;
   }
@@ -54,7 +54,7 @@ public final class SimpleProtoStoreImpl implements SimpleProtoStore {
             try {
               parsed = parser.parseFrom(bytes);
             } catch (InvalidProtocolBufferException e) {
-              if (config.equals(ScopeConfig.CACHE)) {
+              if (config.equals(NamespaceConfig.CACHE)) {
                 // A cache is allowed to be cleared whenever and we will try and give you a default
                 // instance instead.
                 return Futures.immediateFuture(parser.parseFrom(ByteString.EMPTY));
