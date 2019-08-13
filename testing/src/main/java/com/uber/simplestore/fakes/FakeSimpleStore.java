@@ -77,7 +77,13 @@ public final class FakeSimpleStore implements SimpleStore {
   }
 
   @Override
-  public ListenableFuture<Void> deleteAll() {
+  public ListenableFuture<Void> clear() {
+    data.clear();
+    return returnOrFail(null);
+  }
+
+  @Override
+  public ListenableFuture<Void> deleteAllNow() {
     data.clear();
     return returnOrFail(null);
   }

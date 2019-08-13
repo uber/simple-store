@@ -44,7 +44,7 @@ class KotlinActivity : AppCompatActivity() {
         }
         findViewById<View>(R.id.activity_main_clear)
             .setOnClickListener {
-                Futures.addCallback(simpleStore.deleteAll(), object : FutureCallback<Void> {
+                Futures.addCallback(simpleStore.clear(), object : FutureCallback<Void> {
                     override fun onSuccess(msg: Void?) {
                         loadMessage()
                     }

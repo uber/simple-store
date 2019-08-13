@@ -19,7 +19,10 @@ import android.content.Context;
 import com.google.common.annotations.VisibleForTesting;
 import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
+import com.uber.simplestore.StoreClosedException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import javax.annotation.concurrent.GuardedBy;
@@ -82,6 +85,30 @@ public final class SimpleStoreFactory {
         namespaces.remove(store.getNamespace());
       }
     }
+  }
+
+  static void flushAndClearRecursive(SimpleStoreImpl store) {
+    synchronized (namespacesLock) {
+      store.failQueueThenRun(new StoreClosedException("deleteAllNow"), store::clearCache);
+      List<SimpleStoreImpl> children = getOpenChildren(store.getNamespace());
+      for (SimpleStoreImpl child : children) {
+        child.failQueueThenRun(new StoreClosedException("parent deleteAllNow"), child::clearCache);
+      }
+      store.moveAway();
+    }
+  }
+
+  @VisibleForTesting
+  static List<SimpleStoreImpl> getOpenChildren(String scope) {
+    List<SimpleStoreImpl> list = new ArrayList<>();
+    synchronized (namespacesLock) {
+      for (String key : namespaces.keySet()) {
+        if (key.startsWith(scope) && !key.equals(scope)) {
+          list.add(namespaces.get(key));
+        }
+      }
+    }
+    return list;
   }
 
   @VisibleForTesting

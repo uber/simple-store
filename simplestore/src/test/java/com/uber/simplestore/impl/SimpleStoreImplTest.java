@@ -28,6 +28,7 @@ import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.StoreClosedException;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
 import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.junit.After;
@@ -43,6 +44,7 @@ public final class SimpleStoreImplTest {
   private static final String TEST_KEY = "test";
   private static final byte[] VALUE_ONE = new byte[] {0xA, 0xB};
   private static final byte[] VALUE_TWO = new byte[] {0x1, 0x2};
+  private static final String SAMPLE_SCOPE = "myscope";
 
   private Context context = RuntimeEnvironment.systemContext;
 
@@ -71,7 +73,7 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void putString() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
+    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
       store.putString(TEST_KEY, "foo").get();
       assertThat(store.getString(TEST_KEY).get()).isEqualTo("foo");
       assertThat(store.contains(TEST_KEY).get()).isTrue();
@@ -87,12 +89,74 @@ public final class SimpleStoreImplTest {
   }
 
   @Test
-  public void deleteAll() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
+  public void clear() throws Exception {
+    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
       store.put(TEST_KEY, new byte[1]).get();
-      store.deleteAll().get();
+      store.clear().get();
       ListenableFuture<byte[]> empty = store.get(TEST_KEY);
       assertThat(empty.get()).isEmpty();
+    }
+  }
+
+  @Test
+  public void deleteAll_noChildren() throws Exception {
+    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+      store.putString(TEST_KEY, "foo").get();
+      store.deleteAllNow().get();
+    }
+    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+      ListenableFuture<String> empty = store.getString(TEST_KEY);
+      assertThat(empty.get()).isEmpty();
+    }
+
+    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+      CountDownLatch blocker = enqueueBlockingOperation(store);
+      ListenableFuture<String> failedRead = store.getString(TEST_KEY);
+      ListenableFuture<Void> deletion = store.deleteAllNow();
+      blocker.countDown();
+      deletion.get();
+      try {
+        failedRead.get();
+        fail("no exception");
+      } catch (ExecutionException ex) {
+        assertThat(ex.getCause()).isInstanceOf(StoreClosedException.class);
+      }
+    }
+  }
+
+  @Test
+  public void deleteAll_withChildren() throws Exception {
+    try (SimpleStore store = SimpleStoreFactory.create(context, "parent/child")) {
+      store.putString(TEST_KEY, "foo").get();
+    }
+    try (SimpleStore store = SimpleStoreFactory.create(context, "parent")) {
+      store.deleteAllNow().get();
+    }
+    try (SimpleStore store = SimpleStoreFactory.create(context, "parent/child")) {
+      ListenableFuture<String> empty = store.getString(TEST_KEY);
+      assertThat(empty.get()).isEmpty();
+    }
+  }
+
+  @Test
+  public void deleteAll_openChild() throws Exception {
+    try (SimpleStore child = SimpleStoreFactory.create(context, "parent/child")) {
+      child.putString(TEST_KEY, "first").get();
+      try (SimpleStore store = SimpleStoreFactory.create(context, "parent")) {
+        store.deleteAllNow().get();
+      }
+      ListenableFuture<String> empty = child.getString(TEST_KEY);
+      assertThat(empty.get()).isEqualTo("");
+    }
+  }
+
+  @Test
+  public void deleteAll_twice() throws Exception {
+    try (SimpleStore store = SimpleStoreFactory.create(context, "twice")) {
+      ListenableFuture<Void> first = store.deleteAllNow();
+      ListenableFuture<Void> second = store.deleteAllNow();
+      first.get();
+      second.get();
     }
   }
 
