@@ -26,12 +26,18 @@ protobuf {
     protoc {
         artifact = "com.google.protobuf:protoc:${deps.external.protoc}"
     }
+    plugins {
+        javalite {
+            artifact = "com.google.protobuf:protoc-gen-javalite:${deps.external.protocLite}"
+        }
+    }
     generateProtoTasks {
         all().each { task ->
             task.builtins {
-                java {
-                    option 'lite'
-                }
+                remove java
+            }
+            task.plugins {
+                javalite { }
             }
         }
     }
