@@ -19,9 +19,9 @@ To include in a gradle project, add to your dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.uber.simplestore:simplestore:0.0.5'
+    implementation 'com.uber.simplestore:simplestore:0.0.6'
     // If using protocol buffers, also add:
-    implementation 'com.uber.simplestore:simplestore-proto:0.0.5'
+    implementation 'com.uber.simplestore:simplestore-proto:0.0.6'
 }
 ```
 
