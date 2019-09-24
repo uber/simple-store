@@ -1,6 +1,10 @@
 Changelog
 =========
 
+Version 0.0.7
+----------------------------
+* Upgrade to protolite's new runtime.
+
 Version 0.0.6
 ----------------------------
 
