@@ -44,7 +44,8 @@ public interface SimpleStore extends Closeable {
   /**
    * Retrieve a byte[] from disk.
    *
-   * @param key to store to
+   * @param key to read from
+   * @return value if present, empty array if absent
    */
   @CheckReturnValue
   ListenableFuture<byte[]> get(String key);

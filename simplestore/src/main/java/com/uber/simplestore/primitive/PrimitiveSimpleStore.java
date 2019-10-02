@@ -22,8 +22,8 @@ import javax.annotation.CheckReturnValue;
 /**
  * Store primitives on disk.
  *
- * <p>All methods never return null in the future, #{@link SimpleStore#contains(String)} should be
- * used for optionality.
+ * <p>All methods never return null in the ListenableFuture, #{@link SimpleStore#contains(String)}
+ * should be used for optionality. If the value is not set, the 0-byte primitive will be returned.
  */
 public interface PrimitiveSimpleStore extends SimpleStore {
 

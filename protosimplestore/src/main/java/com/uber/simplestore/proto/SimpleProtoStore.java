@@ -22,10 +22,27 @@ import com.uber.simplestore.SimpleStore;
 import javax.annotation.CheckReturnValue;
 import javax.annotation.Nullable;
 
+/** Read and write protocol buffer values from keys on disk. */
 public interface SimpleProtoStore extends SimpleStore {
+  /**
+   * Read a protocol buffer from disk
+   *
+   * @param key to read from
+   * @param parser to parse with
+   * @param <T> proto type
+   * @return value if present, default instance of T if absent
+   */
   @CheckReturnValue
   <T extends MessageLite> ListenableFuture<T> get(String key, Parser<T> parser);
 
+  /**
+   * Write a protocol buffer to disk
+   *
+   * @param key to store to
+   * @param value to store
+   * @param <T> proto type
+   * @return value if success
+   */
   @CheckReturnValue
   <T extends MessageLite> ListenableFuture<T> put(String key, @Nullable T value);
 }
