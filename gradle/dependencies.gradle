@@ -15,7 +15,7 @@
  */
 
 def versions = [
-        kotlin        : '1.3.31',
+        kotlin        : '1.3.61',
         errorProne    : '2.3.3',
         gjf           : '1.7',
         nullawayPlugin: '0.2',
@@ -35,14 +35,14 @@ def build = [
         errorProneTestHelpers: "com.google.errorprone:error_prone_test_helpers:${versions.errorProne}",
         nullAway             : 'com.uber.nullaway:nullaway:0.7.0',
         gradlePlugins        : [
-                android   : '3.5.0',
-                kotlin    : '1.3.31',
-                errorProne: '0.8',
-                nullAway  : '0.2',
-                protobuf  : '0.8.10',
-                spotless  : '3.23.0',
-                mavenPublish : '0.8.0',
-                dokka     : '0.9.18',
+                android     : '3.6.1',
+                kotlin      : '1.3.61',
+                errorProne  : '0.8',
+                nullAway    : '0.2',
+                protobuf    : '0.8.10',
+                spotless    : '3.23.0',
+                mavenPublish: '0.8.0',
+                dokka       : '0.9.18',
         ]
 ]
 
