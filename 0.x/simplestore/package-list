@@ -1,0 +1,7 @@
+$dokka.format:gfm
+$dokka.linkExtension:md
+
+com.uber.simplestore
+com.uber.simplestore.executors
+com.uber.simplestore.impl
+com.uber.simplestore.primitive
