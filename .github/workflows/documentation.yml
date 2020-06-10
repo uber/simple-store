@@ -27,4 +27,4 @@ jobs:
           mkdocs-material
     # Runs a single command using the runners shell
     - name: Build & deploy
-      run: deploy_website.sh
+      run: ./deploy_website.sh
