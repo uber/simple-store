@@ -1,6 +1,11 @@
 Changelog
 =========
 
+Version 0.0.8
+----------------------------
+* Upgrade to latest protolite runtime.
+* Build with and target Android 11.
+
 Version 0.0.7
 ----------------------------
 * Upgrade to protolite's new runtime.

@@ -1,6 +1,5 @@
 # Simple Store
-
-[![Build Status](https://travis-ci.com/uber/simple-store.svg?token=vUDcZtk6T5yr64PuQJP1&branch=master)](https://travis-ci.com/uber/simple-store)
+![CI](https://github.com/uber/simple-store/workflows/CI/badge.svg?branch=master)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3000/badge)](https://bestpractices.coreinfrastructure.org/projects/3000)
 [![Maven Central](https://img.shields.io/maven-central/v/com.uber.simplestore/simplestore.svg)](https://search.maven.org/artifact/com.uber.simplestore/simplestore)
 [![Maven Central](https://img.shields.io/maven-central/v/com.uber.simplestore/simplestore-proto.svg)](https://search.maven.org/artifact/com.uber.simplestore/simplestore-proto)
@@ -19,9 +18,9 @@ To include in a gradle project, add to your dependencies:
 
 ```groovy
 dependencies {
-    implementation 'com.uber.simplestore:simplestore:0.0.7'
+    implementation 'com.uber.simplestore:simplestore:0.0.8'
     // If using protocol buffers, also add:
-    implementation 'com.uber.simplestore:simplestore-proto:0.0.7'
+    implementation 'com.uber.simplestore:simplestore-proto:0.0.8'
 }
 ```
 
@@ -93,7 +92,7 @@ This model makes deadlock across namespaces impossible, as even a blockingGet ca
 
 ## License
 
-    Copyright (C) 2019 Uber Technologies
+    Copyright (C) 2020 Uber Technologies
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
