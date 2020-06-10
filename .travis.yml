@@ -9,8 +9,8 @@ before_script:
 
 android:
   components:
-    - build-tools-29.0.2
-    - android-29
+    - build-tools-30.0.0
+    - android-30
 
 before_cache:
   - rm -f  $HOME/.gradle/caches/modules-2/modules-2.lock

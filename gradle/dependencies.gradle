@@ -22,11 +22,11 @@ def versions = [
 ]
 
 def build = [
-        buildToolsVersion    : '29.0.2',
-        compileSdkVersion    : 29,
+        buildToolsVersion    : '30.0.0',
+        compileSdkVersion    : 30,
         ci                   : 'true' == System.getenv('CI'),
         minSdkVersion        : 19,
-        targetSdkVersion     : 29,
+        targetSdkVersion     : 30,
         javaVersion          : JavaVersion.VERSION_1_8,
 
         errorProne           : "com.google.errorprone:error_prone_core:${versions.errorProne}",
