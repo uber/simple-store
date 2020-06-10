@@ -51,4 +51,4 @@ jobs:
         cp CONTRIBUTING.md docs/contributing.md
         cp CODE_OF_CONDUCT.md docs/code-of-conduct.md
     - name: Build & deploy
-      run: mkdocs gh-deploy
+      run: mkdocs gh-deploy --force
