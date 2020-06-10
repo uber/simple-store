@@ -19,12 +19,21 @@ jobs:
     steps:
     # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
     - uses: actions/checkout@v2
+    - name: Gradle Wrapper Validation
+      uses: gradle/wrapper-validation-action@v1
     - uses: actions/setup-python@v1
     - uses: BSFishy/pip-action@v1
       with:
         packages: |
           mkdocs
           mkdocs-material
-    # Runs a single command using the runners shell
+    - name: Generate dokka
+      run: ./gradlew dokka
+    - name: Add plain files
+      run: |
+        cp README.md docs/index.md
+        cp CHANGELOG.md docs/changelog.md
+        cp CONTRIBUTING.md docs/contributing.md
+        cp CODE_OF_CONDUCT.md docs/code-of-conduct.md
     - name: Build & deploy
-      run: ./deploy_website.sh
+      run: mkdocs gh-deploy
