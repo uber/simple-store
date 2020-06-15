@@ -98,6 +98,13 @@ public final class SimpleStoreImplTest {
     }
   }
 
+  @Test(expected = IllegalArgumentException.class)
+  public void invalidFilenameThrows() throws Exception {
+    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+      store.putString("./", "foo").get();
+    }
+  }
+
   @Test
   public void deleteAll_noChildren() throws Exception {
     try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
