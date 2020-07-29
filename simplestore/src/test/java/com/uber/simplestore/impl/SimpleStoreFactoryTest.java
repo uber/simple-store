@@ -18,6 +18,7 @@ package com.uber.simplestore.impl;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.SimpleStore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -28,13 +29,14 @@ import org.robolectric.RuntimeEnvironment;
 public final class SimpleStoreFactoryTest {
 
   private Context context = RuntimeEnvironment.systemContext;
+  private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @Test
   public void findChildren() {
-    SimpleStore root = SimpleStoreFactory.create(context, "");
-    SimpleStore parent = SimpleStoreFactory.create(context, "parent");
-    SimpleStore child = SimpleStoreFactory.create(context, "parent/child");
-    SimpleStore leaf = SimpleStoreFactory.create(context, "leaf");
+    SimpleStore root = SimpleStoreFactory.create(directoryProvider, "");
+    SimpleStore parent = SimpleStoreFactory.create(directoryProvider, "parent");
+    SimpleStore child = SimpleStoreFactory.create(directoryProvider, "parent/child");
+    SimpleStore leaf = SimpleStoreFactory.create(directoryProvider, "leaf");
 
     assertThat(SimpleStoreFactory.getOpenChildren("leaf")).isEmpty();
     assertThat(SimpleStoreFactory.getOpenChildren("parent/child")).isEmpty();

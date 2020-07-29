@@ -22,8 +22,10 @@ import android.content.Context;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.protobuf.InvalidProtocolBufferException;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
+import com.uber.simplestore.impl.AndroidDirectoryProvider;
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
 import com.uber.simplestore.proto.test.TestProto;
 import java.nio.charset.Charset;
@@ -40,10 +42,11 @@ public class SimpleProtoStoreImplTest {
   private static final String TEST_KEY = "test";
   private static final String FOO = "foo";
   private Context context = RuntimeEnvironment.systemContext;
+  private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @Test
   public void defaultInstanceWhenEmpty() throws Exception {
-    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<TestProto.Basic> future = store.get(TEST_KEY, TestProto.Basic.parser());
       assertThat(future.get()).isNotNull();
       assertThat(future.get()).isEqualTo(TestProto.Basic.getDefaultInstance());
@@ -52,7 +55,7 @@ public class SimpleProtoStoreImplTest {
 
   @Test
   public void defaultInstanceWhenEmpty_withRequiredField() throws Exception {
-    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<TestProto.Required> future =
           store.get(TEST_KEY, TestProto.Required.parser());
       try {
@@ -68,10 +71,10 @@ public class SimpleProtoStoreImplTest {
   @Test
   public void savesDefaultInstance() throws Exception {
     TestProto.Basic basic = TestProto.Basic.getDefaultInstance();
-    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       store.put(TEST_KEY, basic).get();
     }
-    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       TestProto.Basic out = store.get(TEST_KEY, TestProto.Basic.parser()).get();
       assertThat(out).isEqualTo(basic);
     }
@@ -80,10 +83,10 @@ public class SimpleProtoStoreImplTest {
   @Test
   public void savesValue() throws Exception {
     TestProto.Basic basic = TestProto.Basic.newBuilder().setName(FOO).build();
-    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       store.put(TEST_KEY, basic).get();
     }
-    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       TestProto.Basic out = store.get(TEST_KEY, TestProto.Basic.parser()).get();
       assertThat(out).isEqualTo(basic);
     }
@@ -91,11 +94,11 @@ public class SimpleProtoStoreImplTest {
 
   @Test
   public void failsGracefullyOnParsingFail() throws Exception {
-    try (SimpleStore simpleStore = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleStore simpleStore = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       simpleStore.put(TEST_KEY, "garbage".getBytes(Charset.defaultCharset())).get();
     }
 
-    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<TestProto.Basic> out = store.get(TEST_KEY, TestProto.Basic.parser());
       try {
         Futures.getChecked(out, InvalidProtocolBufferException.class);
@@ -108,12 +111,12 @@ public class SimpleProtoStoreImplTest {
 
   @Test
   public void whenCache_returnsDefaultOnParseFailure() throws Exception {
-    try (SimpleStore simpleStore = SimpleProtoStoreFactory.create(context, "")) {
+    try (SimpleStore simpleStore = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       simpleStore.put(TEST_KEY, "garbage".getBytes(Charset.defaultCharset())).get();
     }
 
     try (SimpleProtoStore store =
-        SimpleProtoStoreFactory.create(context, "", NamespaceConfig.CACHE)) {
+        SimpleProtoStoreFactory.create(directoryProvider, "", NamespaceConfig.CACHE)) {
       TestProto.Basic failed = store.get(TEST_KEY, TestProto.Basic.parser()).get();
       assertThat(failed).isEqualTo(TestProto.Basic.getDefaultInstance());
     }
