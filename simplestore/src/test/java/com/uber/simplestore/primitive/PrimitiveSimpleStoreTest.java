@@ -18,6 +18,7 @@ package com.uber.simplestore.primitive;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
@@ -28,14 +29,14 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
 @SuppressWarnings("UnstableApiUsage")
 @RunWith(RobolectricTestRunner.class)
 public final class PrimitiveSimpleStoreTest {
 
   private static final String TEST_KEY = "test";
-  private Context context = RuntimeEnvironment.systemContext;
+  private Context context =
+      InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
   private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @After

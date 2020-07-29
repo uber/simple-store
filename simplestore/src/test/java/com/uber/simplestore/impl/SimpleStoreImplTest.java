@@ -20,6 +20,7 @@ import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
@@ -32,7 +33,6 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
 @SuppressWarnings("UnstableApiUsage")
 @RunWith(RobolectricTestRunner.class)
@@ -43,7 +43,8 @@ public final class SimpleStoreImplTest {
   private static final byte[] VALUE_TWO = new byte[] {0x1, 0x2};
   private static final String SAMPLE_SCOPE = "myscope";
 
-  private Context context = RuntimeEnvironment.systemContext;
+  private Context context =
+      InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
   private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @After
