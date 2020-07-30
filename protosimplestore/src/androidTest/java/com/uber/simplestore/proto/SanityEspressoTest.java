@@ -21,7 +21,9 @@ import android.content.Context;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
 import androidx.test.runner.AndroidJUnit4;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
+import com.uber.simplestore.impl.AndroidDirectoryProvider;
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
 import com.uber.simplestore.proto.test.TestProto;
 import org.junit.Test;
@@ -35,15 +37,16 @@ public class SanityEspressoTest {
   private static final String KEY_ONE = "key_one";
   private static final String SAMPLE_STRING = "persisted_value";
   private Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+  private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @Test
   public void defaultNamespace() throws Exception {
-    SimpleProtoStore store = SimpleProtoStoreFactory.create(context, TEST_NAMESPACE);
+    SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, TEST_NAMESPACE);
     TestProto.Basic proto = TestProto.Basic.newBuilder().setName(SAMPLE_STRING).build();
     store.put(KEY_ONE, proto).get();
     store.close();
 
-    SimpleProtoStore storeTwo = SimpleProtoStoreFactory.create(context, TEST_NAMESPACE);
+    SimpleProtoStore storeTwo = SimpleProtoStoreFactory.create(directoryProvider, TEST_NAMESPACE);
     TestProto.Basic fromDisk = storeTwo.get(KEY_ONE, TestProto.Basic.parser()).get();
     assertEquals(proto.getName(), fromDisk.getName());
     storeTwo.close();
@@ -52,13 +55,13 @@ public class SanityEspressoTest {
   @Test
   public void cache() throws Exception {
     SimpleProtoStore store =
-        SimpleProtoStoreFactory.create(context, TEST_NAMESPACE, NamespaceConfig.CACHE);
+        SimpleProtoStoreFactory.create(directoryProvider, TEST_NAMESPACE, NamespaceConfig.CACHE);
     TestProto.Basic proto = TestProto.Basic.newBuilder().setName(SAMPLE_STRING).build();
     store.put(KEY_ONE, proto).get();
     store.close();
 
     SimpleProtoStore storeTwo =
-        SimpleProtoStoreFactory.create(context, TEST_NAMESPACE, NamespaceConfig.CACHE);
+        SimpleProtoStoreFactory.create(directoryProvider, TEST_NAMESPACE, NamespaceConfig.CACHE);
     TestProto.Basic fromDisk = storeTwo.get(KEY_ONE, TestProto.Basic.parser()).get();
     assertEquals(proto.getName(), fromDisk.getName());
     storeTwo.close();

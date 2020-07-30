@@ -20,13 +20,11 @@ import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
 import static org.junit.Assert.fail;
 
 import android.content.Context;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
-import com.uber.simplestore.NamespaceConfig;
-import com.uber.simplestore.SimpleStore;
-import com.uber.simplestore.SimpleStoreConfig;
-import com.uber.simplestore.StoreClosedException;
+import com.uber.simplestore.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
@@ -35,7 +33,6 @@ import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
 @SuppressWarnings("UnstableApiUsage")
 @RunWith(RobolectricTestRunner.class)
@@ -46,7 +43,9 @@ public final class SimpleStoreImplTest {
   private static final byte[] VALUE_TWO = new byte[] {0x1, 0x2};
   private static final String SAMPLE_SCOPE = "myscope";
 
-  private Context context = RuntimeEnvironment.systemContext;
+  private Context context =
+      InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
+  private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @After
   public void reset() {
@@ -56,7 +55,7 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void zeroLengthWhenMissing() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<byte[]> future = store.get(TEST_KEY);
       assertThat(future.get()).hasLength(0);
     }
@@ -64,7 +63,7 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void puttingNullDeletesKey() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "")) {
       store.put(TEST_KEY, new byte[1]).get();
       ListenableFuture<byte[]> second = store.put(TEST_KEY, null);
       assertThat(second.get()).isEmpty();
@@ -73,7 +72,7 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void putString() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, SAMPLE_SCOPE)) {
       store.putString(TEST_KEY, "foo").get();
       assertThat(store.getString(TEST_KEY).get()).isEqualTo("foo");
       assertThat(store.contains(TEST_KEY).get()).isTrue();
@@ -90,7 +89,7 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void clear() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, SAMPLE_SCOPE)) {
       store.put(TEST_KEY, new byte[1]).get();
       store.clear().get();
       ListenableFuture<byte[]> empty = store.get(TEST_KEY);
@@ -100,16 +99,16 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void deleteAll_noChildren() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, SAMPLE_SCOPE)) {
       store.putString(TEST_KEY, "foo").get();
       store.deleteAllNow().get();
     }
-    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, SAMPLE_SCOPE)) {
       ListenableFuture<String> empty = store.getString(TEST_KEY);
       assertThat(empty.get()).isEmpty();
     }
 
-    try (SimpleStore store = SimpleStoreFactory.create(context, SAMPLE_SCOPE)) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, SAMPLE_SCOPE)) {
       CountDownLatch blocker = enqueueBlockingOperation(store);
       ListenableFuture<String> failedRead = store.getString(TEST_KEY);
       ListenableFuture<Void> deletion = store.deleteAllNow();
@@ -126,13 +125,13 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void deleteAll_withChildren() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, "parent/child")) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "parent/child")) {
       store.putString(TEST_KEY, "foo").get();
     }
-    try (SimpleStore store = SimpleStoreFactory.create(context, "parent")) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "parent")) {
       store.deleteAllNow().get();
     }
-    try (SimpleStore store = SimpleStoreFactory.create(context, "parent/child")) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "parent/child")) {
       ListenableFuture<String> empty = store.getString(TEST_KEY);
       assertThat(empty.get()).isEmpty();
     }
@@ -140,9 +139,9 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void deleteAll_openChild() throws Exception {
-    try (SimpleStore child = SimpleStoreFactory.create(context, "parent/child")) {
+    try (SimpleStore child = SimpleStoreFactory.create(directoryProvider, "parent/child")) {
       child.putString(TEST_KEY, "first").get();
-      try (SimpleStore store = SimpleStoreFactory.create(context, "parent")) {
+      try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "parent")) {
         store.deleteAllNow().get();
       }
       ListenableFuture<String> empty = child.getString(TEST_KEY);
@@ -152,7 +151,7 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void deleteAll_twice() throws Exception {
-    try (SimpleStore store = SimpleStoreFactory.create(context, "twice")) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "twice")) {
       ListenableFuture<Void> first = store.deleteAllNow();
       ListenableFuture<Void> second = store.deleteAllNow();
       first.get();
@@ -164,7 +163,7 @@ public final class SimpleStoreImplTest {
   public void operationsBeforeCloseSucceed() throws Exception {
     ListenableFuture<byte[]> success;
     CountDownLatch latch;
-    try (SimpleStore store = SimpleStoreFactory.create(context, "")) {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "")) {
       success = store.put(TEST_KEY, VALUE_ONE);
       latch = enqueueBlockingOperation(store);
       // These callbacks are enqueued behind the slow write.
@@ -204,7 +203,7 @@ public final class SimpleStoreImplTest {
 
   @Test
   public void operationsAfterCloseFail() throws Exception {
-    SimpleStore store = SimpleStoreFactory.create(context, "");
+    SimpleStore store = SimpleStoreFactory.create(directoryProvider, "");
     ListenableFuture<byte[]> success = store.put(TEST_KEY, VALUE_ONE);
     CountDownLatch latch = enqueueBlockingOperation(store);
     store.close();
@@ -218,7 +217,7 @@ public final class SimpleStoreImplTest {
 
     assertThat(success.get()).isEqualTo(VALUE_ONE); // doesn't matter when we get this
 
-    try (SimpleStore storeTwo = SimpleStoreFactory.create(context, "")) {
+    try (SimpleStore storeTwo = SimpleStoreFactory.create(directoryProvider, "")) {
       latch.countDown(); // simulate the close having been blocked on slow IO.
       assertThat(storeTwo.get(TEST_KEY).get()).isEqualTo(VALUE_ONE);
     }
@@ -229,13 +228,13 @@ public final class SimpleStoreImplTest {
     String someNamespace = "bar";
     String value = "some value";
     try (SimpleStore namespacedBase =
-        SimpleStoreFactory.create(context, someNamespace, NamespaceConfig.DEFAULT)) {
+        SimpleStoreFactory.create(directoryProvider, someNamespace, NamespaceConfig.DEFAULT)) {
       ListenableFuture<String> success = namespacedBase.putString("foo", value);
       success.get();
     }
 
     try (SimpleStore namespacedFactory =
-        SimpleStoreFactory.create(context, someNamespace, NamespaceConfig.DEFAULT)) {
+        SimpleStoreFactory.create(directoryProvider, someNamespace, NamespaceConfig.DEFAULT)) {
       ListenableFuture<String> read = namespacedFactory.getString("foo");
       assertThat(read.get()).isEqualTo(value);
     }
@@ -244,11 +243,11 @@ public final class SimpleStoreImplTest {
   @Test
   public void oneInstancePerNamespace() {
     String someNamespace = "foo";
-    try (SimpleStore ignoredOuter = SimpleStoreFactory.create(context, "")) {
+    try (SimpleStore ignoredOuter = SimpleStoreFactory.create(directoryProvider, "")) {
       try (SimpleStore ignored =
-          SimpleStoreFactory.create(context, someNamespace, NamespaceConfig.DEFAULT)) {
+          SimpleStoreFactory.create(directoryProvider, someNamespace, NamespaceConfig.DEFAULT)) {
         try {
-          SimpleStoreFactory.create(context, someNamespace, NamespaceConfig.DEFAULT);
+          SimpleStoreFactory.create(directoryProvider, someNamespace, NamespaceConfig.DEFAULT);
           fail();
         } catch (IllegalStateException e) {
           // expected.

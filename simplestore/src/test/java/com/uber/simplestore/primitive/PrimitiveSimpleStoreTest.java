@@ -18,22 +18,26 @@ package com.uber.simplestore.primitive;
 import static com.google.common.truth.Truth.assertThat;
 
 import android.content.Context;
+import androidx.test.platform.app.InstrumentationRegistry;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStoreConfig;
+import com.uber.simplestore.impl.AndroidDirectoryProvider;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.RuntimeEnvironment;
 
 @SuppressWarnings("UnstableApiUsage")
 @RunWith(RobolectricTestRunner.class)
 public final class PrimitiveSimpleStoreTest {
 
   private static final String TEST_KEY = "test";
-  private Context context = RuntimeEnvironment.systemContext;
+  private Context context =
+      InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
+  private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @After
   public void reset() {
@@ -44,7 +48,7 @@ public final class PrimitiveSimpleStoreTest {
   @Test
   public void whenMissingOnDisk_numbers() throws Exception {
     try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(context, "", NamespaceConfig.DEFAULT)) {
+        PrimitiveSimpleStoreFactory.create(directoryProvider, "", NamespaceConfig.DEFAULT)) {
       assertThat(store.contains(TEST_KEY).get()).isFalse();
 
       Integer integer = store.getInt(TEST_KEY).get();
@@ -62,7 +66,7 @@ public final class PrimitiveSimpleStoreTest {
   @Test
   public void whenMissingOnDisk_string() throws Exception {
     try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(context, "", NamespaceConfig.DEFAULT)) {
+        PrimitiveSimpleStoreFactory.create(directoryProvider, "", NamespaceConfig.DEFAULT)) {
       assertThat(store.contains(TEST_KEY).get()).isFalse();
 
       String s = store.getString(TEST_KEY).get();
@@ -76,7 +80,7 @@ public final class PrimitiveSimpleStoreTest {
   @Test
   public void whenMissingOnDisk_boolean() throws Exception {
     try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(context, "", NamespaceConfig.DEFAULT)) {
+        PrimitiveSimpleStoreFactory.create(directoryProvider, "", NamespaceConfig.DEFAULT)) {
       assertThat(store.contains(TEST_KEY).get()).isFalse();
 
       boolean b = store.getBoolean(TEST_KEY).get();
@@ -88,7 +92,7 @@ public final class PrimitiveSimpleStoreTest {
 
   @Test
   public void put_Integer() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(context, "")) {
+    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<Integer> future = store.put(TEST_KEY, Integer.MAX_VALUE);
       future.get();
       assertThat(store.getInt(TEST_KEY).get()).isEqualTo(Integer.MAX_VALUE);
@@ -102,7 +106,7 @@ public final class PrimitiveSimpleStoreTest {
 
   @Test
   public void put_Long() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(context, "")) {
+    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<Long> future = store.put(TEST_KEY, Long.MAX_VALUE);
       future.get();
       assertThat(store.getLong(TEST_KEY).get()).isEqualTo(Long.MAX_VALUE);
@@ -116,7 +120,7 @@ public final class PrimitiveSimpleStoreTest {
 
   @Test
   public void put_Double() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(context, "")) {
+    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<Double> future = store.put(TEST_KEY, Double.MAX_VALUE);
       future.get();
       assertThat(store.getDouble(TEST_KEY).get()).isEqualTo(Double.MAX_VALUE);
@@ -126,7 +130,7 @@ public final class PrimitiveSimpleStoreTest {
 
   @Test
   public void put_Boolean() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(context, "")) {
+    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<Boolean> future = store.put(TEST_KEY, true);
       future.get();
       assertThat(store.getBoolean(TEST_KEY).get()).isTrue();
@@ -140,7 +144,7 @@ public final class PrimitiveSimpleStoreTest {
 
   @Test
   public void put_String() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(context, "")) {
+    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
       store.put(TEST_KEY, "stuff").get();
 
       assertThat(store.getString(TEST_KEY).get()).isEqualTo("stuff");
@@ -154,7 +158,7 @@ public final class PrimitiveSimpleStoreTest {
 
   @Test
   public void remove() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(context, "")) {
+    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
       store.putString(TEST_KEY, "junk").get();
       store.remove(TEST_KEY).get();
       assertThat(store.getInt(TEST_KEY).get()).isEqualTo(0);

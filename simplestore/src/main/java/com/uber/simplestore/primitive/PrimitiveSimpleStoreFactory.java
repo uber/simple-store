@@ -15,17 +15,18 @@
  */
 package com.uber.simplestore.primitive;
 
-import android.content.Context;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 
 public final class PrimitiveSimpleStoreFactory {
-  public static PrimitiveSimpleStore create(Context context, String namespace) {
-    return create(context, namespace, NamespaceConfig.DEFAULT);
+  public static PrimitiveSimpleStore create(DirectoryProvider directoryProvider, String namespace) {
+    return create(directoryProvider, namespace, NamespaceConfig.DEFAULT);
   }
 
   public static PrimitiveSimpleStore create(
-      Context context, String namespace, NamespaceConfig config) {
-    return new PrimitiveSimpleStoreImpl(SimpleStoreFactory.create(context, namespace, config));
+      DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
+    return new PrimitiveSimpleStoreImpl(
+        SimpleStoreFactory.create(directoryProvider, namespace, config));
   }
 }
