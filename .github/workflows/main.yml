@@ -20,7 +20,7 @@ jobs:
         java_version: [1.8]
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
       - name: Gradle Wrapper Validation
         uses: gradle/wrapper-validation-action@v1
       - name: Generate cache key
@@ -38,7 +38,7 @@ jobs:
       - name: Wipe local gradle
         run: rm -rf ~/.gradle
       - name: Install Android SDK
-        uses: malinskiy/action-android/install-sdk@release/0.0.3
+        uses: malinskiy/action-android/install-sdk@release/0.0.9
       - name: Configure Gradle
         # Initial gradle configuration, install dependencies, etc
         run: ./gradlew help
@@ -51,7 +51,7 @@ jobs:
       - name: Run tests
         run: ./gradlew test --stacktrace
       - name: Run instrumentation tests
-        uses: malinskiy/action-android/emulator-run-cmd@release/0.0.3
+        uses: malinskiy/action-android/emulator-run-cmd@release/0.0.9
         with:
           cmd: ./gradlew connectedCheck --stacktrace
           api: 18
