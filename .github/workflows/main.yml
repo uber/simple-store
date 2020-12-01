@@ -54,7 +54,7 @@ jobs:
         uses: malinskiy/action-android/emulator-run-cmd@release/0.0.9
         with:
           cmd: ./gradlew connectedCheck --stacktrace
-          api: 18
+          api: 21
           tag: default
           abi: x86
       - name: Reclaim memory
