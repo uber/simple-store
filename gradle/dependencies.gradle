@@ -22,7 +22,6 @@ def versions = [
 ]
 
 def build = [
-        buildToolsVersion    : '30.0.2',
         compileSdkVersion    : 30,
         ci                   : 'true' == System.getenv('CI'),
         minSdkVersion        : 19,
@@ -53,7 +52,7 @@ def androidx = [
 def test = [
         junit      : 'junit:junit:4.12',
         truth      : 'com.google.truth:truth:0.46',
-        robolectric: 'org.robolectric:robolectric:4.2',
+        robolectric: 'org.robolectric:robolectric:4.4',
         espresso   : 'androidx.test.espresso:espresso-core:3.2.0',
         runner     : 'androidx.test:runner:1.2.0',
         rules      : 'androidx.test:rules:1.2.0',
