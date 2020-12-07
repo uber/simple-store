@@ -38,7 +38,7 @@ jobs:
       - name: Wipe local gradle
         run: rm -rf ~/.gradle
       - name: Install Android SDK
-        uses: malinskiy/action-android/install-sdk@release/0.0.9
+        uses: malinskiy/action-android/install-sdk@release/0.1.0
       - name: Configure Gradle
         # Initial gradle configuration, install dependencies, etc
         run: ./gradlew help
@@ -51,7 +51,7 @@ jobs:
       - name: Run tests
         run: ./gradlew test --stacktrace
       - name: Run instrumentation tests
-        uses: malinskiy/action-android/emulator-run-cmd@release/0.0.9
+        uses: malinskiy/action-android/emulator-run-cmd@release/0.1.0
         with:
           cmd: ./gradlew connectedCheck --stacktrace
           api: 21
