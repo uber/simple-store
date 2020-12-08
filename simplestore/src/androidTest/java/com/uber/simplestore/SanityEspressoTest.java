@@ -18,9 +18,9 @@ package com.uber.simplestore;
 import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
+import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
 import com.uber.simplestore.impl.AndroidDirectoryProvider;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import org.junit.Test;
@@ -34,7 +34,7 @@ public class SanityEspressoTest {
   private static final String KEY_ONE = "key_one";
   private static final String SAMPLE_STRING = "persisted_value";
   private static final byte[] SOME_BYTES = new byte[] {0xD, 0xE, 0xA, 0xD, 0x0, 0xB, 0xE, 0xE, 0xF};
-  private Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+  private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
   private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @Test
