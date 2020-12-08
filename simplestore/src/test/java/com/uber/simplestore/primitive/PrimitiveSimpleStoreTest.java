@@ -30,12 +30,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-@SuppressWarnings("UnstableApiUsage")
 @RunWith(RobolectricTestRunner.class)
 public final class PrimitiveSimpleStoreTest {
 
   private static final String TEST_KEY = "test";
-  private Context context =
+  private final Context context =
       InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
   private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 

@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.RobolectricTestRunner;
 
-@SuppressWarnings("UnstableApiUsage")
 @RunWith(RobolectricTestRunner.class)
 public final class SimpleStoreImplTest {
 
@@ -43,7 +42,7 @@ public final class SimpleStoreImplTest {
   private static final byte[] VALUE_TWO = new byte[] {0x1, 0x2};
   private static final String SAMPLE_SCOPE = "myscope";
 
-  private Context context =
+  private final Context context =
       InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
   private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 

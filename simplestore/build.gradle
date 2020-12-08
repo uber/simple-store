@@ -38,11 +38,15 @@ dependencies {
     api deps.external.guavaAndroid
 
     testImplementation deps.test.junit
+    testImplementation deps.test.junitX
     testImplementation deps.test.truth
+    testImplementation deps.test.truthX
     testImplementation deps.test.robolectric
 
     androidTestImplementation deps.test.runner
     androidTestImplementation deps.test.rules
+    androidTestImplementation deps.test.junitX
+    androidTestImplementation deps.test.truthX
 
     androidTestUtil deps.test.orchestrator
 }
