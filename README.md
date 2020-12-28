@@ -1,5 +1,5 @@
 # Simple Store
-![CI](https://github.com/uber/simple-store/workflows/CI/badge.svg?branch=master)
+![CI](https://github.com/uber/simple-store/workflows/CI/badge.svg?branch=main)
 [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3000/badge)](https://bestpractices.coreinfrastructure.org/projects/3000)
 [![Maven Central](https://img.shields.io/maven-central/v/com.uber.simplestore/simplestore.svg)](https://search.maven.org/artifact/com.uber.simplestore/simplestore)
 [![Maven Central](https://img.shields.io/maven-central/v/com.uber.simplestore/simplestore-proto.svg)](https://search.maven.org/artifact/com.uber.simplestore/simplestore-proto)
