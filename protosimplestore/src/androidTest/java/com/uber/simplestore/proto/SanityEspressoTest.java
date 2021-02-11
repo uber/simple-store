@@ -19,8 +19,8 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
 import androidx.test.filters.LargeTest;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
 import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.impl.AndroidDirectoryProvider;
@@ -29,14 +29,14 @@ import com.uber.simplestore.proto.test.TestProto;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(AndroidJUnit4ClassRunner.class)
 @LargeTest
 public class SanityEspressoTest {
 
   private static final String TEST_NAMESPACE = "test_namespace";
   private static final String KEY_ONE = "key_one";
   private static final String SAMPLE_STRING = "persisted_value";
-  private Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+  private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
   private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @Test

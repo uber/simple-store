@@ -57,9 +57,9 @@ def test = [
         truthX   : 'androidx.test.ext:truth:1.0.0',
         robolectric: 'org.robolectric:robolectric:4.4',
         espresso   : 'androidx.test.espresso:espresso-core:3.2.0',
-        runner     : 'androidx.test:runner:1.3.0',
-        rules      : 'androidx.test:rules:1.3.0',
-        orchestrator : 'androidx.test:orchestrator:1.3.0',
+        runner     : 'androidx.test:runner:1.4.0-alpha04',
+        rules      : 'androidx.test:rules:1.4.0-alpha04',
+        orchestrator : 'androidx.test:orchestrator:1.4.0-alpha04',
 ]
 
 def kotlin = [
