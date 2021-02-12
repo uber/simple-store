@@ -2,6 +2,7 @@ plugins {
     id 'com.android.library'
     id 'com.diffplug.gradle.spotless'
     id 'org.jetbrains.dokka-android'
+    id 'com.vanniktech.maven.publish'
 }
 
 android {
@@ -38,5 +39,3 @@ dependencies {
     testImplementation deps.test.junit
     testImplementation deps.test.truth
 }
-
-apply plugin: 'com.vanniktech.maven.publish'
