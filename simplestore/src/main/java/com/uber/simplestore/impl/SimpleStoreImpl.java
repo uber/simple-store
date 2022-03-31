@@ -34,6 +34,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 import javax.annotation.Nullable;
 
@@ -53,8 +54,7 @@ final class SimpleStoreImpl implements SimpleStore {
 
   // Only touch from the serial executor.
   private final Map<String, byte[]> cache = new HashMap<>();
-  private final Executor orderedIoExecutor =
-      MoreExecutors.newSequentialExecutor(SimpleStoreConfig.getIOExecutor());
+  private final Executor orderedIoExecutor = Executors.newSingleThreadExecutor();
   @Nullable private Exception flush;
 
   SimpleStoreImpl(DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
@@ -199,12 +199,11 @@ final class SimpleStoreImpl implements SimpleStore {
   public ListenableFuture<Void> deleteAllNow() {
     SimpleStoreFactory.flushAndClearRecursive(this);
 
-    return Futures.submitAsync(
+    return Futures.submit(
         () -> {
           if (namespacedDirectory != null) {
             recursiveDelete(namespacedDirectory);
           }
-          return Futures.immediateFuture(null);
         },
         orderedIoExecutor);
   }

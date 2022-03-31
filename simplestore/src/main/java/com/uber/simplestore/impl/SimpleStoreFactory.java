@@ -40,22 +40,24 @@ public final class SimpleStoreFactory {
   private static final Object namespacesLock = new Object();
 
   @GuardedBy("namespacesLock")
-  private static Map<String, SimpleStoreImpl> namespaces = new HashMap<>();
+  private static final Map<String, SimpleStoreImpl> namespaces = new HashMap<>();
 
   /**
-   * Obtain a store for a namespace with default configuration.
+   * Create a store for a namespace with default configuration.
    *
+   * @throws IllegalStateException if already exists an opened store for the namespace
    * @param directoryProvider to store the files in
    * @param namespace forward-slash delimited logical address
    * @return open store
    */
   public static SimpleStore create(DirectoryProvider directoryProvider, String namespace) {
-    return create(directoryProvider, namespace, NamespaceConfig.DEFAULT);
+    return provideStore(directoryProvider, namespace, NamespaceConfig.DEFAULT, false);
   }
 
   /**
-   * Obtain a store for a namespace.
+   * Create a store for a namespace.
    *
+   * @throws IllegalStateException if already exists an opened store for the namespace
    * @param directoryProvider to store the files in
    * @param namespace forward-slash delimited logical address
    * @param config to use
@@ -63,11 +65,57 @@ public final class SimpleStoreFactory {
    */
   public static SimpleStore create(
       DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
+    return provideStore(directoryProvider, namespace, config, false);
+  }
+
+  /**
+   * If doesn't exist an open store instance for the namespace, will create and return a store for a
+   * namespace with the default configuration. If exist an open store instance for the namespace,
+   * will return a store for a namespace with the default configuration.
+   *
+   * @param directoryProvider to store the files in
+   * @param namespace forward-slash delimited logical address
+   * @return open store
+   */
+  public static SimpleStore getOrCreate(DirectoryProvider directoryProvider, String namespace) {
+    return provideStore(directoryProvider, namespace, NamespaceConfig.DEFAULT, true);
+  }
+
+  /**
+   * If doesn't exist an open store instance for the namespace, will create and return a store for a
+   * namespace. If exist an open store instance for the namespace, will return a store for a
+   * namespace.
+   *
+   * @param directoryProvider to store the files in
+   * @param namespace forward-slash delimited logical address
+   * @param config to use
+   * @return open store
+   */
+  public static SimpleStore getOrCreate(
+      DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
+    return provideStore(directoryProvider, namespace, config, true);
+  }
+
+  /**
+   * Internal method to obtain a store for a namespace.
+   *
+   * @param directoryProvider to store the files in
+   * @param namespace forward-slash delimited logical address
+   * @param config to use
+   * @param reuseAlreadyOpenedInstances if already exists an opened store for the namespace the
+   *     method will return this opened instance
+   * @return open store
+   */
+  private static SimpleStore provideStore(
+      DirectoryProvider directoryProvider,
+      String namespace,
+      NamespaceConfig config,
+      boolean reuseAlreadyOpenedInstances) {
     SimpleStoreImpl store;
     synchronized (namespacesLock) {
       if (namespaces.containsKey(namespace)) {
         store = namespaces.get(namespace);
-        if (!Objects.requireNonNull(store).openIfClosed()) {
+        if (!reuseAlreadyOpenedInstances && !Objects.requireNonNull(store).openIfClosed()) {
           // Never let two references be issued.
           throw new IllegalStateException("namespace '" + namespace + "' already open");
         }

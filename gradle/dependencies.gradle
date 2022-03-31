@@ -34,7 +34,7 @@ def build = [
         errorProneTestHelpers: "com.google.errorprone:error_prone_test_helpers:${versions.errorProne}",
         nullAway             : 'com.uber.nullaway:nullaway:0.8.0',
         gradlePlugins        : [
-                android   : '7.0.0-alpha01',
+                android   : '4.2.0',
                 kotlin    : '1.3.72',
                 errorProne: '0.8',
                 nullAway  : '0.2',
