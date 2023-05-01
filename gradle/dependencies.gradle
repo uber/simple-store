@@ -15,10 +15,11 @@
  */
 
 def versions = [
-        kotlin        : '1.4.20',
+        kotlin        : '1.6.21',
         errorProne    : '2.4.0',
         gjf           : '1.7',
         nullawayPlugin: '0.8.0',
+        protobuf      : '3.22.3'
 ]
 
 def build = [
@@ -34,13 +35,13 @@ def build = [
         errorProneTestHelpers: "com.google.errorprone:error_prone_test_helpers:${versions.errorProne}",
         nullAway             : 'com.uber.nullaway:nullaway:0.8.0',
         gradlePlugins        : [
-                android   : '7.0.0-alpha01',
-                kotlin    : '1.3.72',
-                errorProne: '0.8',
-                nullAway  : '0.2',
+                android   : '7.2.2',
+                kotlin    : "${versions.kotlin}",
+                errorProne: '2.0.1',
+                nullAway  : '1.3.0',
                 protobuf  : '0.8.12',
                 spotless  : '4.3.0',
-                mavenPublish : '0.11.1',
+                mavenPublish : '0.22.0',
                 dokka     : '0.9.18',
         ]
 ]
@@ -68,8 +69,8 @@ def kotlin = [
 def external = [
         guavaAndroid: 'com.google.guava:guava:29.0-android',
         findBugs    : 'com.google.code.findbugs:jsr305:3.0.2',
-        protoLite   : 'com.google.protobuf:protobuf-javalite:3.14.0',
-        protoc      : '3.14.0',
+        protoLite   : "com.google.protobuf:protobuf-javalite:${versions.protobuf}",
+        protoc      : "${versions.protobuf}",
 ]
 
 ext.deps = [
