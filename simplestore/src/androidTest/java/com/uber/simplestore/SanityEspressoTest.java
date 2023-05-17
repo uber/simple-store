@@ -18,15 +18,15 @@ package com.uber.simplestore;
 import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
-import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 import androidx.test.platform.app.InstrumentationRegistry;
 import com.uber.simplestore.impl.AndroidDirectoryProvider;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(AndroidJUnit4ClassRunner.class)
 @LargeTest
 public class SanityEspressoTest {
 

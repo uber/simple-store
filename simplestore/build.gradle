@@ -2,9 +2,11 @@ plugins {
     id 'com.android.library'
     id 'com.diffplug.gradle.spotless'
     id 'org.jetbrains.dokka-android'
+    id 'com.vanniktech.maven.publish'
 }
 
 android {
+    buildToolsVersion deps.build.buildToolsVersion
     compileSdkVersion deps.build.compileSdkVersion
 
     defaultConfig {
@@ -57,5 +59,3 @@ dokka {
   outputDirectory = "$rootDir/docs/0.x"
   sourceDirs = android.sourceSets.main.java.srcDirs
 }
-
-apply plugin: 'com.vanniktech.maven.publish'

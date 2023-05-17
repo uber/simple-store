@@ -15,14 +15,15 @@
  */
 
 def versions = [
-        kotlin        : '1.6.21',
-        errorProne    : '2.4.0',
+        kotlin        : '1.8.20',
+        errorProne    : '2.5.1',
         gjf           : '1.7',
         nullawayPlugin: '0.8.0',
         protobuf      : '3.22.3'
 ]
 
 def build = [
+        buildToolsVersion    : "30.0.3",
         compileSdkVersion    : 30,
         ci                   : 'true' == System.getenv('CI'),
         minSdkVersion        : 19,
