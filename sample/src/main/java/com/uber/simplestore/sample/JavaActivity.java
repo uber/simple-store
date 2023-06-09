@@ -28,7 +28,9 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.google.common.util.concurrent.FutureCallback;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
+import com.uber.simplestore.impl.AndroidDirectoryProvider;
 import com.uber.simplestore.proto.Demo;
 import com.uber.simplestore.proto.SimpleProtoStore;
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
@@ -87,8 +89,10 @@ public class JavaActivity extends AppCompatActivity {
       nesting.append("/nest");
     }
     Log.w("Nesting: ", nesting.toString());
+    DirectoryProvider directoryProvider = new AndroidDirectoryProvider(this);
     simpleStore =
-        SimpleProtoStoreFactory.create(this, "main" + nesting.toString(), NamespaceConfig.DEFAULT);
+        SimpleProtoStoreFactory.create(
+            directoryProvider, "main" + nesting.toString(), NamespaceConfig.DEFAULT);
     loadMessage();
   }
 

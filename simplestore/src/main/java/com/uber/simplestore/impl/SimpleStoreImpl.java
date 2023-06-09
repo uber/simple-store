@@ -15,12 +15,12 @@
  */
 package com.uber.simplestore.impl;
 
-import android.content.Context;
 import android.util.Log;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.SimpleStoreConfig;
@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 /** Asynchronous storage implementation. */
@@ -46,7 +47,6 @@ final class SimpleStoreImpl implements SimpleStore {
   private static final byte[] EMPTY_BYTES = new byte[0];
   private static final Charset STRING_ENCODING = StandardCharsets.UTF_16BE;
 
-  private final Context context;
   private final String namespace;
   @Nullable private File namespacedDirectory;
 
@@ -56,18 +56,17 @@ final class SimpleStoreImpl implements SimpleStore {
   private final Map<String, byte[]> cache = new HashMap<>();
   private final Executor orderedIoExecutor =
       MoreExecutors.newSequentialExecutor(SimpleStoreConfig.getIOExecutor());
-  @Nullable private Exception flush;
+  private final AtomicReference<Exception> flush = new AtomicReference<>(null);
 
-  SimpleStoreImpl(Context appContext, String namespace, NamespaceConfig config) {
-    this.context = appContext;
+  SimpleStoreImpl(DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
     this.namespace = namespace;
     orderedIoExecutor.execute(
         () -> {
           File directory;
           if (config.equals(NamespaceConfig.CACHE)) {
-            directory = context.getCacheDir();
+            directory = directoryProvider.cacheDirectoryPath();
           } else {
-            directory = context.getFilesDir();
+            directory = directoryProvider.filesDirectoryPath();
           }
           namespacedDirectory = new File(directory.getAbsolutePath() + "/simplestore/" + namespace);
           //noinspection ResultOfMethodCallIgnored
@@ -220,14 +219,13 @@ final class SimpleStoreImpl implements SimpleStore {
    * Cause all items in the queue to fail out, then run something before enabling the queue again
    */
   void failQueueThenRun(Exception exception, Runnable runnable) {
-    if (flush != null) {
+    if (!flush.compareAndSet(null, exception)) {
       throw new IllegalStateException();
     }
-    this.flush = exception;
     orderedIoExecutor.execute(
         () -> {
           runnable.run();
-          this.flush = null;
+          flush.set(null);
         });
   }
 
@@ -288,10 +286,9 @@ final class SimpleStoreImpl implements SimpleStore {
   private Exception isDead() {
     if (available.get() > CLOSED) {
       return new StoreClosedException();
-    } else if (flush != null) {
-      return flush;
+    } else {
+      return flush.get();
     }
-    return null;
   }
 
   private void deleteFile(String key) {

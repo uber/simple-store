@@ -1,15 +1,14 @@
 plugins {
     id 'com.android.application'
     id 'kotlin-android'
-    id 'kotlin-android-extensions'
     id 'com.google.protobuf'
     id 'com.diffplug.gradle.spotless'
     id 'org.jetbrains.dokka-android'
 }
 
 android {
-    compileSdkVersion deps.build.compileSdkVersion
     buildToolsVersion deps.build.buildToolsVersion
+    compileSdkVersion deps.build.compileSdkVersion
 
     defaultConfig {
         minSdkVersion deps.build.minSdkVersion

@@ -15,8 +15,8 @@
  */
 package com.uber.simplestore.impl;
 
-import android.content.Context;
 import com.google.common.annotations.VisibleForTesting;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.SimpleStore;
 import com.uber.simplestore.StoreClosedException;
@@ -45,24 +45,24 @@ public final class SimpleStoreFactory {
   /**
    * Obtain a store for a namespace with default configuration.
    *
-   * @param context to store in
+   * @param directoryProvider to store the files in
    * @param namespace forward-slash delimited logical address
    * @return open store
    */
-  public static SimpleStore create(Context context, String namespace) {
-    return create(context, namespace, NamespaceConfig.DEFAULT);
+  public static SimpleStore create(DirectoryProvider directoryProvider, String namespace) {
+    return create(directoryProvider, namespace, NamespaceConfig.DEFAULT);
   }
 
   /**
    * Obtain a store for a namespace.
    *
-   * @param context to store in
+   * @param directoryProvider to store the files in
    * @param namespace forward-slash delimited logical address
    * @param config to use
    * @return open store
    */
-  public static SimpleStore create(Context context, String namespace, NamespaceConfig config) {
-    Context appContext = context.getApplicationContext();
+  public static SimpleStore create(
+      DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
     SimpleStoreImpl store;
     synchronized (namespacesLock) {
       if (namespaces.containsKey(namespace)) {
@@ -72,7 +72,7 @@ public final class SimpleStoreFactory {
           throw new IllegalStateException("namespace '" + namespace + "' already open");
         }
       } else {
-        store = new SimpleStoreImpl(appContext, namespace, config);
+        store = new SimpleStoreImpl(directoryProvider, namespace, config);
         namespaces.put(namespace, store);
       }
     }

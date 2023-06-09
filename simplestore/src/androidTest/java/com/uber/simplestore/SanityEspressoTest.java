@@ -19,13 +19,14 @@ import static org.junit.Assert.assertEquals;
 
 import android.content.Context;
 import androidx.test.filters.LargeTest;
+import androidx.test.internal.runner.junit4.AndroidJUnit4ClassRunner;
 import androidx.test.platform.app.InstrumentationRegistry;
-import androidx.test.runner.AndroidJUnit4;
+import com.uber.simplestore.impl.AndroidDirectoryProvider;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(AndroidJUnit4.class)
+@RunWith(AndroidJUnit4ClassRunner.class)
 @LargeTest
 public class SanityEspressoTest {
 
@@ -33,15 +34,16 @@ public class SanityEspressoTest {
   private static final String KEY_ONE = "key_one";
   private static final String SAMPLE_STRING = "persisted_value";
   private static final byte[] SOME_BYTES = new byte[] {0xD, 0xE, 0xA, 0xD, 0x0, 0xB, 0xE, 0xE, 0xF};
-  private Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+  private final Context context = InstrumentationRegistry.getInstrumentation().getTargetContext();
+  private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @Test
   public void defaultNamespace_bytes() throws Exception {
-    SimpleStore store = SimpleStoreFactory.create(context, TEST_NAMESPACE);
+    SimpleStore store = SimpleStoreFactory.create(directoryProvider, TEST_NAMESPACE);
     store.put(KEY_ONE, SOME_BYTES).get();
     store.close();
 
-    SimpleStore storeTwo = SimpleStoreFactory.create(context, TEST_NAMESPACE);
+    SimpleStore storeTwo = SimpleStoreFactory.create(directoryProvider, TEST_NAMESPACE);
     byte[] fromDisk = storeTwo.get(KEY_ONE).get();
     assertEquals(SOME_BYTES, fromDisk);
     storeTwo.close();
@@ -49,11 +51,11 @@ public class SanityEspressoTest {
 
   @Test
   public void defaultNamespace_string() throws Exception {
-    SimpleStore store = SimpleStoreFactory.create(context, TEST_NAMESPACE);
+    SimpleStore store = SimpleStoreFactory.create(directoryProvider, TEST_NAMESPACE);
     store.putString(KEY_ONE, SAMPLE_STRING).get();
     store.close();
 
-    SimpleStore storeTwo = SimpleStoreFactory.create(context, TEST_NAMESPACE);
+    SimpleStore storeTwo = SimpleStoreFactory.create(directoryProvider, TEST_NAMESPACE);
     String fromDisk = storeTwo.getString(KEY_ONE).get();
     assertEquals(SAMPLE_STRING, fromDisk);
     storeTwo.close();
@@ -61,12 +63,13 @@ public class SanityEspressoTest {
 
   @Test
   public void cache() throws Exception {
-    SimpleStore store = SimpleStoreFactory.create(context, TEST_NAMESPACE, NamespaceConfig.CACHE);
+    SimpleStore store =
+        SimpleStoreFactory.create(directoryProvider, TEST_NAMESPACE, NamespaceConfig.CACHE);
     store.putString(KEY_ONE, SAMPLE_STRING).get();
     store.close();
 
     SimpleStore storeTwo =
-        SimpleStoreFactory.create(context, TEST_NAMESPACE, NamespaceConfig.CACHE);
+        SimpleStoreFactory.create(directoryProvider, TEST_NAMESPACE, NamespaceConfig.CACHE);
     String fromDisk = storeTwo.getString(KEY_ONE).get();
     assertEquals(SAMPLE_STRING, fromDisk);
     storeTwo.close();

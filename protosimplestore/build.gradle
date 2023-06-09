@@ -3,11 +3,11 @@ plugins {
     id 'com.google.protobuf'
     id 'com.diffplug.gradle.spotless'
     id 'org.jetbrains.dokka-android'
+    id 'com.vanniktech.maven.publish'
 }
 
 android {
     compileSdkVersion deps.build.compileSdkVersion
-    buildToolsVersion deps.build.buildToolsVersion
 
     defaultConfig {
         minSdkVersion deps.build.minSdkVersion
@@ -70,5 +70,3 @@ dependencies {
 
     androidTestUtil deps.test.orchestrator
 }
-
-apply plugin: 'com.vanniktech.maven.publish'

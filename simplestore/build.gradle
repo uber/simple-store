@@ -2,11 +2,12 @@ plugins {
     id 'com.android.library'
     id 'com.diffplug.gradle.spotless'
     id 'org.jetbrains.dokka-android'
+    id 'com.vanniktech.maven.publish'
 }
 
 android {
-    compileSdkVersion deps.build.compileSdkVersion
     buildToolsVersion deps.build.buildToolsVersion
+    compileSdkVersion deps.build.compileSdkVersion
 
     defaultConfig {
         minSdkVersion deps.build.minSdkVersion
@@ -36,14 +37,19 @@ android {
 
 dependencies {
     implementation deps.external.findBugs
+    implementation deps.kotlin.stdLibJdk8
     api deps.external.guavaAndroid
 
     testImplementation deps.test.junit
+    testImplementation deps.test.junitX
     testImplementation deps.test.truth
+    testImplementation deps.test.truthX
     testImplementation deps.test.robolectric
 
     androidTestImplementation deps.test.runner
     androidTestImplementation deps.test.rules
+    androidTestImplementation deps.test.junitX
+    androidTestImplementation deps.test.truthX
 
     androidTestUtil deps.test.orchestrator
 }
@@ -53,5 +59,3 @@ dokka {
   outputDirectory = "$rootDir/docs/0.x"
   sourceDirs = android.sourceSets.main.java.srcDirs
 }
-
-apply plugin: 'com.vanniktech.maven.publish'

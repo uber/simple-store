@@ -11,11 +11,11 @@ import com.google.common.util.concurrent.FutureCallback
 import com.google.common.util.concurrent.Futures
 
 import com.uber.simplestore.NamespaceConfig
+import com.uber.simplestore.impl.AndroidDirectoryProvider
 import com.uber.simplestore.proto.Demo
 import com.uber.simplestore.proto.SimpleProtoStore
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory
 import com.uber.simplestore.executors.StorageExecutors.mainExecutor as mainExecutor
-
 
 /**
  * Store and retrieve a text field.
@@ -63,7 +63,8 @@ class KotlinActivity : AppCompatActivity() {
             nesting.append("/nest")
         }
         Log.e("Test", nesting.toString())
-        simpleStore = SimpleProtoStoreFactory.create(this, "main$nesting", NamespaceConfig.DEFAULT)
+        val directoryProvider = AndroidDirectoryProvider(this)
+        simpleStore = SimpleProtoStoreFactory.create(directoryProvider, "main$nesting", NamespaceConfig.DEFAULT)
         loadMessage()
     }
 

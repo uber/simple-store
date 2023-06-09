@@ -15,7 +15,7 @@
  */
 package com.uber.simplestore.proto.impl;
 
-import android.content.Context;
+import com.uber.simplestore.DirectoryProvider;
 import com.uber.simplestore.NamespaceConfig;
 import com.uber.simplestore.impl.SimpleStoreFactory;
 import com.uber.simplestore.proto.SimpleProtoStore;
@@ -24,15 +24,18 @@ import com.uber.simplestore.proto.SimpleProtoStore;
  * Obtain an instance of a storage namespace with proto support. Only one instance per namespace may
  * exist at any time.
  *
- * <p>Delegates to {@link SimpleStoreFactory#create(Context, String, NamespaceConfig)}.
+ * <p>Delegates to {@link SimpleStoreFactory#create(com.uber.simplestore.DirectoryProvider, String,
+ * NamespaceConfig)}.
  */
 public final class SimpleProtoStoreFactory {
 
-  public static SimpleProtoStore create(Context context, String namespace) {
-    return create(context, namespace, NamespaceConfig.DEFAULT);
+  public static SimpleProtoStore create(DirectoryProvider directoryProvider, String namespace) {
+    return create(directoryProvider, namespace, NamespaceConfig.DEFAULT);
   }
 
-  public static SimpleProtoStore create(Context context, String namespace, NamespaceConfig config) {
-    return new SimpleProtoStoreImpl(SimpleStoreFactory.create(context, namespace, config), config);
+  public static SimpleProtoStore create(
+      DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
+    return new SimpleProtoStoreImpl(
+        SimpleStoreFactory.create(directoryProvider, namespace, config), config);
   }
 }

@@ -17,33 +17,27 @@ jobs:
     runs-on: macOS-latest
     strategy:
       matrix:
-        java_version: [1.8]
+        java_version: [11]
     steps:
       - name: Checkout
-        uses: actions/checkout@v1
-      - name: Gradle Wrapper Validation
-        uses: gradle/wrapper-validation-action@v1
-      - name: Generate cache key
-        run: ./checksum.sh checksum.txt
-      - uses: actions/cache@v2
-        with:
-          path: ~/.gradle/caches
-          key: ${{ runner.os }}-${{ hashFiles('checksum.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-
+        uses: actions/checkout@v2
       - name: Install JDK ${{ matrix.java_version }}
         uses: actions/setup-java@v1
         with:
           java-version: ${{ matrix.java_version }}
-      - name: Wipe local gradle
-        run: rm -rf ~/.gradle
+      - name: Gradle Wrapper Validation
+        uses: gradle/wrapper-validation-action@v1
+      - name: Cache gradle packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.gradle/caches
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle') }}
+          restore-keys: ${{ runner.os }}-gradle
       - name: Install Android SDK
-        uses: malinskiy/action-android/install-sdk@release/0.0.3
+        uses: malinskiy/action-android/install-sdk@release/0.1.0
       - name: Configure Gradle
-        # Initial gradle configuration, install dependencies, etc
         run: ./gradlew help
-      - name: Spot check
-        # Run spotless first to fail fast on spotless issues
+      - name: Check formatting
         run: ./gradlew spotlessCheck --stacktrace
       - name: Build project
         run: ./gradlew assemble --stacktrace
@@ -51,13 +45,15 @@ jobs:
       - name: Run tests
         run: ./gradlew test --stacktrace
       - name: Run instrumentation tests
-        uses: malinskiy/action-android/emulator-run-cmd@release/0.0.3
+        uses: malinskiy/action-android/emulator-run-cmd@release/0.1.0
         with:
           cmd: ./gradlew connectedCheck --stacktrace
-          api: 18
+          api: 21
           tag: default
           abi: x86
-      - name: Reclaim memory
-        run: ./gradlew --stop && jps|grep -E 'KotlinCompileDaemon|GradleDaemon'| awk '{print $1}'| xargs kill -9
-      - name: Final checks
+      - name: Full check
         run: ./gradlew check --stacktrace
+      - uses: actions/upload-artifact@v2
+        with:
+          name: Sample App
+          path: sample/build/outputs
