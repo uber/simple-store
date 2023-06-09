@@ -15,13 +15,15 @@
  */
 
 def versions = [
-        kotlin        : '1.4.20',
-        errorProne    : '2.4.0',
+        kotlin        : '1.8.20',
+        errorProne    : '2.5.1',
         gjf           : '1.7',
         nullawayPlugin: '0.8.0',
+        protobuf      : '3.22.3'
 ]
 
 def build = [
+        buildToolsVersion    : "30.0.3",
         compileSdkVersion    : 30,
         ci                   : 'true' == System.getenv('CI'),
         minSdkVersion        : 19,
@@ -34,13 +36,13 @@ def build = [
         errorProneTestHelpers: "com.google.errorprone:error_prone_test_helpers:${versions.errorProne}",
         nullAway             : 'com.uber.nullaway:nullaway:0.8.0',
         gradlePlugins        : [
-                android   : '7.0.0-alpha01',
-                kotlin    : '1.3.72',
-                errorProne: '0.8',
-                nullAway  : '0.2',
+                android   : '7.2.2',
+                kotlin    : "${versions.kotlin}",
+                errorProne: '2.0.1',
+                nullAway  : '1.3.0',
                 protobuf  : '0.8.12',
                 spotless  : '4.3.0',
-                mavenPublish : '0.11.1',
+                mavenPublish : '0.22.0',
                 dokka     : '0.9.18',
         ]
 ]
@@ -53,12 +55,12 @@ def test = [
         junit      : 'junit:junit:4.13.1',
         junitX     : 'androidx.test.ext:junit:1.0.0',
         truth      : 'com.google.truth:truth:1.1',
-        truthX   : 'androidx.test.ext:truth:1.0.0',
+        truthX   : 'androidx.test.ext:truth:1.5.0',
         robolectric: 'org.robolectric:robolectric:4.4',
-        espresso   : 'androidx.test.espresso:espresso-core:3.2.0',
-        runner     : 'androidx.test:runner:1.3.0',
-        rules      : 'androidx.test:rules:1.3.0',
-        orchestrator : 'androidx.test:orchestrator:1.3.0',
+        espresso   : 'androidx.test.espresso:espresso-core:3.5.1',
+        runner     : 'androidx.test:runner:1.5.2',
+        rules      : 'androidx.test:rules:1.5.0',
+        orchestrator : 'androidx.test:orchestrator:1.4.2',
 ]
 
 def kotlin = [
@@ -68,8 +70,8 @@ def kotlin = [
 def external = [
         guavaAndroid: 'com.google.guava:guava:29.0-android',
         findBugs    : 'com.google.code.findbugs:jsr305:3.0.2',
-        protoLite   : 'com.google.protobuf:protobuf-javalite:3.14.0',
-        protoc      : '3.14.0',
+        protoLite   : "com.google.protobuf:protobuf-javalite:${versions.protobuf}",
+        protoc      : "${versions.protobuf}",
 ]
 
 ext.deps = [

@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 /** Asynchronous storage implementation. */
@@ -55,7 +56,7 @@ final class SimpleStoreImpl implements SimpleStore {
   private final Map<String, byte[]> cache = new HashMap<>();
   private final Executor orderedIoExecutor =
       MoreExecutors.newSequentialExecutor(SimpleStoreConfig.getIOExecutor());
-  @Nullable private Exception flush;
+  private final AtomicReference<Exception> flush = new AtomicReference<>(null);
 
   SimpleStoreImpl(DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
     this.namespace = namespace;
@@ -218,14 +219,13 @@ final class SimpleStoreImpl implements SimpleStore {
    * Cause all items in the queue to fail out, then run something before enabling the queue again
    */
   void failQueueThenRun(Exception exception, Runnable runnable) {
-    if (flush != null) {
+    if (!flush.compareAndSet(null, exception)) {
       throw new IllegalStateException();
     }
-    this.flush = exception;
     orderedIoExecutor.execute(
         () -> {
           runnable.run();
-          this.flush = null;
+          flush.set(null);
         });
   }
 
@@ -286,10 +286,9 @@ final class SimpleStoreImpl implements SimpleStore {
   private Exception isDead() {
     if (available.get() > CLOSED) {
       return new StoreClosedException();
-    } else if (flush != null) {
-      return flush;
+    } else {
+      return flush.get();
     }
-    return null;
   }
 
   private void deleteFile(String key) {

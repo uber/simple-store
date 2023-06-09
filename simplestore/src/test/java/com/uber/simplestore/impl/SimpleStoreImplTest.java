@@ -149,12 +149,22 @@ public final class SimpleStoreImplTest {
   }
 
   @Test
-  public void deleteAll_twice() throws Exception {
+  public void deleteAll_twice_sequential_success() throws Exception {
     try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "twice")) {
       ListenableFuture<Void> first = store.deleteAllNow();
-      ListenableFuture<Void> second = store.deleteAllNow();
       first.get();
+      ListenableFuture<Void> second = store.deleteAllNow();
       second.get();
+    }
+  }
+
+  @Test(expected = IllegalStateException.class)
+  public void deleteAll_twice_interwoven_failure() {
+    try (SimpleStore store = SimpleStoreFactory.create(directoryProvider, "twice")) {
+      // prevent first call from finishing
+      enqueueBlockingOperation(store);
+      store.deleteAllNow();
+      store.deleteAllNow();
     }
   }
 
