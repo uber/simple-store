@@ -13,166 +13,142 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.simplestore.primitive;
+package com.uber.simplestore.primitive
 
-import static com.google.common.util.concurrent.MoreExecutors.directExecutor;
+import com.google.common.util.concurrent.Futures
+import com.google.common.util.concurrent.ListenableFuture
+import com.google.common.util.concurrent.MoreExecutors
+import com.uber.simplestore.SimpleStore
 
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.uber.simplestore.SimpleStore;
-import javax.annotation.Nullable;
-
-@SuppressWarnings("UnstableApiUsage")
-final class PrimitiveSimpleStoreImpl implements PrimitiveSimpleStore {
-
-  private final SimpleStore simpleStore;
-
-  PrimitiveSimpleStoreImpl(SimpleStore simpleStore) {
-    this.simpleStore = simpleStore;
-  }
-
-  @Override
-  public ListenableFuture<String> getString(String key) {
-    return Futures.transform(
-        simpleStore.getString(key), value -> value != null ? value : "", directExecutor());
-  }
-
-  @Override
-  public ListenableFuture<String> put(String key, String value) {
-    return simpleStore.putString(key, value);
-  }
-
-  @Override
-  public ListenableFuture<String> putString(String key, @Nullable String value) {
-    return simpleStore.putString(key, value);
-  }
-
-  @Override
-  public ListenableFuture<byte[]> get(String key) {
-    return simpleStore.get(key);
-  }
-
-  @Override
-  public ListenableFuture<byte[]> put(String key, @Nullable byte[] value) {
-    return simpleStore.put(key, value);
-  }
-
-  @Override
-  public ListenableFuture<Boolean> contains(String key) {
-    return simpleStore.contains(key);
-  }
-
-  @Override
-  public ListenableFuture<Void> clear() {
-    return simpleStore.clear();
-  }
-
-  @Override
-  public ListenableFuture<Void> deleteAllNow() {
-    return simpleStore.deleteAllNow();
-  }
-
-  @Override
-  public void close() {
-    simpleStore.close();
-  }
-
-  @Override
-  public ListenableFuture<Integer> getInt(String key) {
-    return Futures.transform(
-        get(key),
-        (b) -> {
-          if (b == null || b.length != 4) {
-            return 0;
-          }
-          // decode big endian
-          return b[0] << 24 | (b[1] & 0xFF) << 16 | (b[2] & 0xFF) << 8 | (b[3] & 0xFF);
-        },
-        directExecutor());
-  }
-
-  @Override
-  public ListenableFuture<Integer> put(String key, int value) {
-    byte[] bytes;
-    if (value != 0) {
-      // encode big endian
-      bytes =
-          new byte[] {
-            (byte) (value >> 24), (byte) (value >> 16), (byte) (value >> 8), (byte) value
-          };
-    } else {
-      bytes = null;
+internal class PrimitiveSimpleStoreImpl(private val simpleStore: SimpleStore) : PrimitiveSimpleStore {
+    override fun getString(key: String): ListenableFuture<String> {
+        return Futures.transform(
+            simpleStore.getString(key), { value: String? -> value ?: "" }, MoreExecutors.directExecutor()
+        )
     }
-    return Futures.transform(put(key, bytes), (v) -> value, directExecutor());
-  }
 
-  @Override
-  public ListenableFuture<Long> getLong(String key) {
-    return Futures.transform(
-        get(key),
-        (b) -> {
-          if (b == null || b.length != 8) {
-            return 0L;
-          }
-          return (b[0] & 0xFFL) << 56
-              | (b[1] & 0xFFL) << 48
-              | (b[2] & 0xFFL) << 40
-              | (b[3] & 0xFFL) << 32
-              | (b[4] & 0xFFL) << 24
-              | (b[5] & 0xFFL) << 16
-              | (b[6] & 0xFFL) << 8
-              | (b[7] & 0xFFL);
-        },
-        directExecutor());
-  }
-
-  @Override
-  public ListenableFuture<Long> put(String key, long value) {
-    byte[] bytes;
-    if (value != 0) {
-      long v = value;
-      bytes = new byte[8];
-      // encode big endian
-      for (int i = 7; i >= 0; i--) {
-        bytes[i] = (byte) (v & 0xffL);
-        v >>= 8;
-      }
-    } else {
-      bytes = null;
+    override fun put(key: String?, value: String?): ListenableFuture<String?>? {
+        return simpleStore.putString(key, value)
     }
-    return Futures.transform(put(key, bytes), (v) -> value, directExecutor());
-  }
 
-  @Override
-  public ListenableFuture<Boolean> getBoolean(String key) {
-    return Futures.transform(
-        get(key), (b) -> b != null && b.length > 0 && b[0] > 0, directExecutor());
-  }
-
-  @Override
-  public ListenableFuture<Boolean> put(String key, boolean value) {
-    byte[] bytes;
-    if (value) {
-      bytes = new byte[] {1};
-    } else {
-      bytes = new byte[] {0};
+    override fun putString(key: String, value: String?): ListenableFuture<String> {
+        return simpleStore.putString(key, value)
     }
-    return Futures.transform(put(key, bytes), (v) -> value, directExecutor());
-  }
 
-  @Override
-  public ListenableFuture<Double> getDouble(String key) {
-    return Futures.transform(getLong(key), Double::longBitsToDouble, directExecutor());
-  }
+    override fun get(key: String): ListenableFuture<ByteArray> {
+        return simpleStore[key]
+    }
 
-  @Override
-  public ListenableFuture<Double> put(String key, double value) {
-    return Futures.transform(
-        put(key, Double.doubleToRawLongBits(value)), (v) -> value, directExecutor());
-  }
+    override fun put(key: String, value: ByteArray?): ListenableFuture<ByteArray> {
+        return simpleStore.put(key, value)
+    }
 
-  @Override
-  public ListenableFuture<Void> remove(String key) {
-    return simpleStore.remove(key);
-  }
+    override fun contains(key: String): ListenableFuture<Boolean> {
+        return simpleStore.contains(key)
+    }
+
+    override fun clear(): ListenableFuture<Void> {
+        return simpleStore.clear()
+    }
+
+    override fun deleteAllNow(): ListenableFuture<Void> {
+        return simpleStore.deleteAllNow()
+    }
+
+    override fun close() {
+        simpleStore.close()
+    }
+
+    override fun getInt(key: String?): ListenableFuture<Int?>? {
+        return Futures.transform(
+            get(key!!),
+            { b: ByteArray? ->
+                if (b == null || b.size != 4) {
+                    return@transform 0
+                }
+                b[0].toInt() shl 24 or (b[1].toInt() and 0xFF shl 16) or (b[2].toInt() and 0xFF shl 8) or (b[3].toInt() and 0xFF)
+            },
+            MoreExecutors.directExecutor()
+        )
+    }
+
+    override fun put(key: String?, value: Int): ListenableFuture<Int?>? {
+        val bytes: ByteArray?
+        bytes = if (value != 0) {
+            // encode big endian
+            byteArrayOf((value shr 24).toByte(), (value shr 16).toByte(), (value shr 8).toByte(), value.toByte())
+        } else {
+            null
+        }
+        return Futures.transform(put(key!!, bytes), { v: ByteArray? -> value }, MoreExecutors.directExecutor())
+    }
+
+    override fun getLong(key: String?): ListenableFuture<Long?>? {
+        return Futures.transform(
+            get(key!!),
+            { b: ByteArray? ->
+                if (b == null || b.size != 8) {
+                    return@transform 0L
+                }
+                b[0].toLong() and 0xFFL shl 56 or (b[1].toLong() and 0xFFL shl 48
+                        ) or (b[2].toLong() and 0xFFL shl 40
+                        ) or (b[3].toLong() and 0xFFL shl 32
+                        ) or (b[4].toLong() and 0xFFL shl 24
+                        ) or (b[5].toLong() and 0xFFL shl 16
+                        ) or (b[6].toLong() and 0xFFL shl 8
+                        ) or (b[7].toLong() and 0xFFL)
+            },
+            MoreExecutors.directExecutor()
+        )
+    }
+
+    override fun put(key: String?, value: Long): ListenableFuture<Long?>? {
+        val bytes: ByteArray?
+        if (value != 0L) {
+            var v = value
+            bytes = ByteArray(8)
+            // encode big endian
+            for (i in 7 downTo 0) {
+                bytes[i] = (v and 0xffL).toByte()
+                v = v shr 8
+            }
+        } else {
+            bytes = null
+        }
+        return Futures.transform(put(key!!, bytes), { v: ByteArray? -> value }, MoreExecutors.directExecutor())
+    }
+
+    override fun getBoolean(key: String?): ListenableFuture<Boolean?>? {
+        return Futures.transform(
+            get(key!!), { b: ByteArray? -> b != null && b.size > 0 && b[0] > 0 }, MoreExecutors.directExecutor()
+        )
+    }
+
+    override fun put(key: String?, value: Boolean): ListenableFuture<Boolean?>? {
+        val bytes: ByteArray
+        bytes = if (value) {
+            byteArrayOf(1)
+        } else {
+            byteArrayOf(0)
+        }
+        return Futures.transform(put(key!!, bytes), { v: ByteArray? -> value }, MoreExecutors.directExecutor())
+    }
+
+    override fun getDouble(key: String?): ListenableFuture<Double?>? {
+        return Futures.transform(getLong(key), { l: Long? ->
+            java.lang.Double.longBitsToDouble(
+                l!!
+            )
+        }, MoreExecutors.directExecutor())
+    }
+
+    override fun put(key: String?, value: Double): ListenableFuture<Double?>? {
+        return Futures.transform(
+            put(key, java.lang.Double.doubleToRawLongBits(value)), { v: Long? -> value }, MoreExecutors.directExecutor()
+        )
+    }
+
+    override fun remove(key: String): ListenableFuture<Void> {
+        return simpleStore.remove(key)
+    }
 }

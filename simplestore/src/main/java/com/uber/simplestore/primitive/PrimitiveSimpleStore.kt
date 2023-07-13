@@ -13,67 +13,65 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.simplestore.primitive;
+package com.uber.simplestore.primitive
 
-import com.google.common.util.concurrent.ListenableFuture;
-import com.uber.simplestore.SimpleStore;
-import javax.annotation.CheckReturnValue;
+import com.google.common.util.concurrent.ListenableFuture
+import com.uber.simplestore.SimpleStore
+import javax.annotation.CheckReturnValue
 
 /**
  * Store primitives on disk.
  *
- * <p>All methods never return null in the ListenableFuture, #{@link SimpleStore#contains(String)}
+ *
+ * All methods never return null in the ListenableFuture, #[SimpleStore.contains]
  * should be used for optionality. If the value is not set, the 0-byte primitive will be returned.
  */
-public interface PrimitiveSimpleStore extends SimpleStore {
+interface PrimitiveSimpleStore : SimpleStore {
+    @CheckReturnValue
+    fun getInt(key: String?): ListenableFuture<Int?>?
 
-  @CheckReturnValue
-  ListenableFuture<Integer> getInt(String key);
+    @CheckReturnValue
+    fun put(key: String?, value: Int): ListenableFuture<Int?>?
 
-  @CheckReturnValue
-  ListenableFuture<Integer> put(String key, int value);
+    @CheckReturnValue
+    fun getLong(key: String?): ListenableFuture<Long?>?
 
-  @CheckReturnValue
-  ListenableFuture<Long> getLong(String key);
+    @CheckReturnValue
+    fun put(key: String?, value: Long): ListenableFuture<Long?>?
 
-  @CheckReturnValue
-  ListenableFuture<Long> put(String key, long value);
+    @CheckReturnValue
+    fun getBoolean(key: String?): ListenableFuture<Boolean?>?
 
-  @CheckReturnValue
-  ListenableFuture<Boolean> getBoolean(String key);
+    @CheckReturnValue
+    fun put(key: String?, value: Boolean): ListenableFuture<Boolean?>?
 
-  @CheckReturnValue
-  ListenableFuture<Boolean> put(String key, boolean value);
+    @CheckReturnValue
+    fun getDouble(key: String?): ListenableFuture<Double?>?
 
-  @CheckReturnValue
-  ListenableFuture<Double> getDouble(String key);
+    @CheckReturnValue
+    fun put(key: String?, value: Double): ListenableFuture<Double?>?
 
-  @CheckReturnValue
-  ListenableFuture<Double> put(String key, double value);
+    /**
+     * Retrieves a #[java.nio.charset.StandardCharsets.UTF_16BE] string.
+     *
+     * @param key to fetch from
+     * @return value if present, otherwise ""
+     */
+    @CheckReturnValue
+    override fun getString(key: String): ListenableFuture<String>
 
-  /**
-   * Retrieves a #{@link java.nio.charset.StandardCharsets#UTF_16BE} string.
-   *
-   * @param key to fetch from
-   * @return value if present, otherwise ""
-   */
-  @CheckReturnValue
-  @Override
-  ListenableFuture<String> getString(String key);
-
-  /**
-   * Store string as #{@link java.nio.charset.StandardCharsets#UTF_16BE}.
-   *
-   * <p>Putting "" will remove the value from disk.
-   *
-   * @param key name
-   * @param value to store
-   * @return stored value
-   */
-  @CheckReturnValue
-  ListenableFuture<String> put(String key, String value);
-
-  @CheckReturnValue
-  @Override
-  ListenableFuture<Void> remove(String key);
+    /**
+     * Store string as #[java.nio.charset.StandardCharsets.UTF_16BE].
+     *
+     *
+     * Putting "" will remove the value from disk.
+     *
+     * @param key name
+     * @param value to store
+     * @return stored value
+     */
+    @CheckReturnValue
+    fun put(key: String?, value: String?): ListenableFuture<String?>?
+    @CheckReturnValue
+    override fun remove(key: String): ListenableFuture<Void>
 }

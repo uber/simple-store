@@ -13,20 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.simplestore.primitive;
+package com.uber.simplestore.primitive
 
-import com.uber.simplestore.DirectoryProvider;
-import com.uber.simplestore.NamespaceConfig;
-import com.uber.simplestore.impl.SimpleStoreFactory;
+import com.uber.simplestore.DirectoryProvider
+import com.uber.simplestore.NamespaceConfig
+import com.uber.simplestore.impl.SimpleStoreFactory
 
-public final class PrimitiveSimpleStoreFactory {
-  public static PrimitiveSimpleStore create(DirectoryProvider directoryProvider, String namespace) {
-    return create(directoryProvider, namespace, NamespaceConfig.DEFAULT);
-  }
-
-  public static PrimitiveSimpleStore create(
-      DirectoryProvider directoryProvider, String namespace, NamespaceConfig config) {
-    return new PrimitiveSimpleStoreImpl(
-        SimpleStoreFactory.create(directoryProvider, namespace, config));
-  }
+object PrimitiveSimpleStoreFactory {
+    @JvmOverloads
+    fun create(
+        directoryProvider: DirectoryProvider?, namespace: String?, config: NamespaceConfig? = NamespaceConfig.DEFAULT
+    ): PrimitiveSimpleStore {
+        return PrimitiveSimpleStoreImpl(
+            SimpleStoreFactory.create(directoryProvider, namespace, config)
+        )
+    }
 }

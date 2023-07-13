@@ -13,156 +13,148 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.simplestore.primitive;
+package com.uber.simplestore.primitive
 
-import static com.google.common.truth.Truth.assertThat;
+import androidx.test.platform.app.InstrumentationRegistry
+import com.google.common.truth.Truth
+import com.uber.simplestore.DirectoryProvider
+import com.uber.simplestore.NamespaceConfig
+import com.uber.simplestore.SimpleStoreConfig
+import com.uber.simplestore.impl.AndroidDirectoryProvider
+import com.uber.simplestore.impl.SimpleStoreFactory
+import com.uber.simplestore.primitive.PrimitiveSimpleStoreFactory.create
+import org.junit.After
+import org.junit.Test
+import org.junit.runner.RunWith
+import org.robolectric.RobolectricTestRunner
 
-import android.content.Context;
-import androidx.test.platform.app.InstrumentationRegistry;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.uber.simplestore.DirectoryProvider;
-import com.uber.simplestore.NamespaceConfig;
-import com.uber.simplestore.SimpleStoreConfig;
-import com.uber.simplestore.impl.AndroidDirectoryProvider;
-import com.uber.simplestore.impl.SimpleStoreFactory;
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.RobolectricTestRunner;
-
-@RunWith(RobolectricTestRunner.class)
-public final class PrimitiveSimpleStoreTest {
-
-  private static final String TEST_KEY = "test";
-  private final Context context =
-      InstrumentationRegistry.getInstrumentation().getTargetContext().getApplicationContext();
-  private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
-
-  @After
-  public void reset() {
-    SimpleStoreConfig.setIOExecutor(null);
-    SimpleStoreFactory.crashIfAnyOpen();
-  }
-
-  @Test
-  public void whenMissingOnDisk_numbers() throws Exception {
-    try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(directoryProvider, "", NamespaceConfig.DEFAULT)) {
-      assertThat(store.contains(TEST_KEY).get()).isFalse();
-
-      Integer integer = store.getInt(TEST_KEY).get();
-      assertThat(integer).isEqualTo(0);
-      Long l = store.getLong(TEST_KEY).get();
-      assertThat(l).isEqualTo(0L);
-      Double d = store.getDouble(TEST_KEY).get();
-      assertThat(d).isEqualTo(0.0);
-
-      // Ensure we don't cache this wrong.
-      assertThat(store.contains(TEST_KEY).get()).isFalse();
+@RunWith(RobolectricTestRunner::class)
+class PrimitiveSimpleStoreTest {
+    private val context = InstrumentationRegistry.getInstrumentation().targetContext.applicationContext
+    private val directoryProvider: DirectoryProvider = AndroidDirectoryProvider(context)
+    @After
+    fun reset() {
+        SimpleStoreConfig.setIOExecutor(null)
+        SimpleStoreFactory.crashIfAnyOpen()
     }
-  }
 
-  @Test
-  public void whenMissingOnDisk_string() throws Exception {
-    try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(directoryProvider, "", NamespaceConfig.DEFAULT)) {
-      assertThat(store.contains(TEST_KEY).get()).isFalse();
+    @Test
+    @Throws(Exception::class)
+    fun whenMissingOnDisk_numbers() {
+        create(directoryProvider, "", NamespaceConfig.DEFAULT).use { store ->
+            Truth.assertThat(store.contains(TEST_KEY).get()).isFalse()
+            val integer = store.getInt(TEST_KEY)!!.get()!!
+            Truth.assertThat(integer).isEqualTo(0)
+            val l = store.getLong(TEST_KEY)!!.get()!!
+            Truth.assertThat(l).isEqualTo(0L)
+            val d = store.getDouble(TEST_KEY)!!.get()!!
+            Truth.assertThat(d).isEqualTo(0.0)
 
-      String s = store.getString(TEST_KEY).get();
-      assertThat(s).isNotNull();
-      assertThat(s).isEmpty();
-
-      assertThat(store.contains(TEST_KEY).get()).isFalse();
+            // Ensure we don't cache this wrong.
+            Truth.assertThat(store.contains(TEST_KEY).get()).isFalse()
+        }
     }
-  }
 
-  @Test
-  public void whenMissingOnDisk_boolean() throws Exception {
-    try (PrimitiveSimpleStore store =
-        PrimitiveSimpleStoreFactory.create(directoryProvider, "", NamespaceConfig.DEFAULT)) {
-      assertThat(store.contains(TEST_KEY).get()).isFalse();
-
-      boolean b = store.getBoolean(TEST_KEY).get();
-      assertThat(b).isFalse();
-
-      assertThat(store.contains(TEST_KEY).get()).isFalse();
+    @Test
+    @Throws(Exception::class)
+    fun whenMissingOnDisk_string() {
+        create(directoryProvider, "", NamespaceConfig.DEFAULT).use { store ->
+            Truth.assertThat(store.contains(TEST_KEY).get()).isFalse()
+            val s = store.getString(TEST_KEY).get()
+            Truth.assertThat(s).isNotNull()
+            Truth.assertThat(s).isEmpty()
+            Truth.assertThat(store.contains(TEST_KEY).get()).isFalse()
+        }
     }
-  }
 
-  @Test
-  public void put_Integer() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
-      ListenableFuture<Integer> future = store.put(TEST_KEY, Integer.MAX_VALUE);
-      future.get();
-      assertThat(store.getInt(TEST_KEY).get()).isEqualTo(Integer.MAX_VALUE);
-
-      store.put(TEST_KEY, Integer.MIN_VALUE).get();
-      assertThat(store.getInt(TEST_KEY).get()).isEqualTo(Integer.MIN_VALUE);
-
-      assertThat(store.contains(TEST_KEY).get()).isTrue();
+    @Test
+    @Throws(Exception::class)
+    fun whenMissingOnDisk_boolean() {
+        create(directoryProvider, "", NamespaceConfig.DEFAULT).use { store ->
+            Truth.assertThat(store.contains(TEST_KEY).get()).isFalse()
+            val b = store.getBoolean(TEST_KEY)!!.get()!!
+            Truth.assertThat(b).isFalse()
+            Truth.assertThat(store.contains(TEST_KEY).get()).isFalse()
+        }
     }
-  }
 
-  @Test
-  public void put_Long() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
-      ListenableFuture<Long> future = store.put(TEST_KEY, Long.MAX_VALUE);
-      future.get();
-      assertThat(store.getLong(TEST_KEY).get()).isEqualTo(Long.MAX_VALUE);
-
-      store.put(TEST_KEY, Long.MIN_VALUE).get();
-      assertThat(store.getLong(TEST_KEY).get()).isEqualTo(Long.MIN_VALUE);
-
-      assertThat(store.contains(TEST_KEY).get()).isTrue();
+    @Test
+    @Throws(Exception::class)
+    fun put_Integer() {
+        create(directoryProvider, "").use { store ->
+            val future = store.put(TEST_KEY, Int.MAX_VALUE)
+            future!!.get()
+            Truth.assertThat(store.getInt(TEST_KEY)!!.get()).isEqualTo(Int.MAX_VALUE)
+            store.put(TEST_KEY, Int.MIN_VALUE)!!.get()
+            Truth.assertThat(store.getInt(TEST_KEY)!!.get()).isEqualTo(Int.MIN_VALUE)
+            Truth.assertThat(store.contains(TEST_KEY).get()).isTrue()
+        }
     }
-  }
 
-  @Test
-  public void put_Double() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
-      ListenableFuture<Double> future = store.put(TEST_KEY, Double.MAX_VALUE);
-      future.get();
-      assertThat(store.getDouble(TEST_KEY).get()).isEqualTo(Double.MAX_VALUE);
-      assertThat(store.contains(TEST_KEY).get()).isTrue();
+    @Test
+    @Throws(Exception::class)
+    fun put_Long() {
+        create(directoryProvider, "").use { store ->
+            val future = store.put(TEST_KEY, Long.MAX_VALUE)
+            future!!.get()
+            Truth.assertThat(store.getLong(TEST_KEY)!!.get()).isEqualTo(Long.MAX_VALUE)
+            store.put(TEST_KEY, Long.MIN_VALUE)!!.get()
+            Truth.assertThat(store.getLong(TEST_KEY)!!.get()).isEqualTo(Long.MIN_VALUE)
+            Truth.assertThat(store.contains(TEST_KEY).get()).isTrue()
+        }
     }
-  }
 
-  @Test
-  public void put_Boolean() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
-      ListenableFuture<Boolean> future = store.put(TEST_KEY, true);
-      future.get();
-      assertThat(store.getBoolean(TEST_KEY).get()).isTrue();
-      assertThat(store.contains(TEST_KEY).get()).isTrue();
-
-      store.put(TEST_KEY, false).get();
-      assertThat(store.getBoolean(TEST_KEY).get()).isFalse();
-      assertThat(store.contains(TEST_KEY).get()).isTrue();
+    @Test
+    @Throws(Exception::class)
+    fun put_Double() {
+        create(directoryProvider, "").use { store ->
+            val future = store.put(TEST_KEY, Double.MAX_VALUE)
+            future!!.get()
+            Truth.assertThat(store.getDouble(TEST_KEY)!!.get()).isEqualTo(Double.MAX_VALUE)
+            Truth.assertThat(store.contains(TEST_KEY).get()).isTrue()
+        }
     }
-  }
 
-  @Test
-  public void put_String() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
-      store.put(TEST_KEY, "stuff").get();
-
-      assertThat(store.getString(TEST_KEY).get()).isEqualTo("stuff");
-      assertThat(store.contains(TEST_KEY).get()).isTrue();
-
-      store.put(TEST_KEY, "").get();
-      assertThat(store.contains(TEST_KEY).get()).isFalse();
-      assertThat(store.getString(TEST_KEY).get()).isEqualTo("");
+    @Test
+    @Throws(Exception::class)
+    fun put_Boolean() {
+        create(directoryProvider, "").use { store ->
+            val future = store.put(TEST_KEY, true)
+            future!!.get()
+            Truth.assertThat(store.getBoolean(TEST_KEY)!!.get()).isTrue()
+            Truth.assertThat(store.contains(TEST_KEY).get()).isTrue()
+            store.put(TEST_KEY, false)!!.get()
+            Truth.assertThat(store.getBoolean(TEST_KEY)!!.get()).isFalse()
+            Truth.assertThat(store.contains(TEST_KEY).get()).isTrue()
+        }
     }
-  }
 
-  @Test
-  public void remove() throws Exception {
-    try (PrimitiveSimpleStore store = PrimitiveSimpleStoreFactory.create(directoryProvider, "")) {
-      store.putString(TEST_KEY, "junk").get();
-      store.remove(TEST_KEY).get();
-      assertThat(store.getInt(TEST_KEY).get()).isEqualTo(0);
-      assertThat(store.getString(TEST_KEY).get()).isEqualTo("");
-      assertThat(store.contains(TEST_KEY).get()).isFalse();
+    @Test
+    @Throws(Exception::class)
+    fun put_String() {
+        create(directoryProvider, "").use { store ->
+            store.put(TEST_KEY, "stuff")!!.get()
+            Truth.assertThat(store.getString(TEST_KEY).get()).isEqualTo("stuff")
+            Truth.assertThat(store.contains(TEST_KEY).get()).isTrue()
+            store.put(TEST_KEY, "")!!.get()
+            Truth.assertThat(store.contains(TEST_KEY).get()).isFalse()
+            Truth.assertThat(store.getString(TEST_KEY).get()).isEqualTo("")
+        }
     }
-  }
+
+    @Test
+    @Throws(Exception::class)
+    fun remove() {
+        create(directoryProvider, "").use { store ->
+            store.putString(TEST_KEY, "junk").get()
+            store.remove(TEST_KEY).get()
+            Truth.assertThat(store.getInt(TEST_KEY)!!.get()).isEqualTo(0)
+            Truth.assertThat(store.getString(TEST_KEY).get()).isEqualTo("")
+            Truth.assertThat(store.contains(TEST_KEY).get()).isFalse()
+        }
+    }
+
+    companion object {
+        private const val TEST_KEY = "test"
+    }
 }
