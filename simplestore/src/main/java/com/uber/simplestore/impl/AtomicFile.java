@@ -16,7 +16,6 @@
 package com.uber.simplestore.impl;
 
 import android.util.Log;
-import com.google.common.annotations.VisibleForTesting;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
