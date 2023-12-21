@@ -16,13 +16,12 @@
 package com.uber.simplestore.impl;
 
 import android.util.Log;
-import org.jetbrains.annotations.Nullable;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import org.jetbrains.annotations.Nullable;
 
 /*
  Forked from AOSP to return failures instead of logcatting.
@@ -68,9 +67,7 @@ final class AtomicFile {
     return mBaseName;
   }
 
-  /**
-   * Delete the atomic file. This deletes both the base and backup files.
-   */
+  /** Delete the atomic file. This deletes both the base and backup files. */
   public void delete() {
     mBaseName.delete();
     mNewName.delete();
