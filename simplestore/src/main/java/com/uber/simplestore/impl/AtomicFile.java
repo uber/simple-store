@@ -44,7 +44,6 @@ import java.io.IOException;
  * may be accessed or modified concurrently by multiple threads or processes. The caller is
  * responsible for ensuring appropriate mutual exclusion invariants whenever it accesses the file.
  */
-@SuppressWarnings({"all", "EmptyCatch", "NullAway"}) // Apparently our checks don't respect "all"
 final class AtomicFile {
 
   private static final String LOG_TAG = "AtomicFile";
