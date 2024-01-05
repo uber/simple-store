@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'com.diffplug.gradle.spotless'
-    id 'org.jetbrains.dokka-android'
+    id 'org.jetbrains.dokka'
     id 'com.vanniktech.maven.publish'
 }
 
@@ -52,10 +52,4 @@ dependencies {
     androidTestImplementation deps.test.truthX
 
     androidTestUtil deps.test.orchestrator
-}
-
-dokka {
-  outputFormat = 'gfm'
-  outputDirectory = "$rootDir/docs/0.x"
-  sourceDirs = android.sourceSets.main.java.srcDirs
 }

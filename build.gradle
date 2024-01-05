@@ -15,7 +15,6 @@ buildscript {
         classpath "com.google.protobuf:protobuf-gradle-plugin:${deps.build.gradlePlugins.protobuf}"
         classpath "com.vanniktech:gradle-maven-publish-plugin:${deps.build.gradlePlugins.mavenPublish}"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${deps.build.gradlePlugins.dokka}"
-        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:${deps.build.gradlePlugins.dokka}"
     }
 }
 
@@ -27,7 +26,7 @@ subprojects {
 
     apply from: rootProject.file('gradle/dependencies.gradle')
     apply plugin: 'com.diffplug.gradle.spotless'
-    apply plugin: 'org.jetbrains.dokka-android'
+    apply plugin: 'org.jetbrains.dokka'
     spotless {
         format 'misc', {
             target '**/*.md', '**/.gitignore'
@@ -74,4 +73,3 @@ task clean(type: Delete) {
 }
 
 apply from: 'gradle/dependencies.gradle'
-apply from: 'gradle/publish-docs.gradle'

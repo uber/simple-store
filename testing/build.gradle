@@ -1,7 +1,7 @@
 plugins {
     id 'com.android.library'
     id 'com.diffplug.gradle.spotless'
-    id 'org.jetbrains.dokka-android'
+    id 'org.jetbrains.dokka'
     id 'com.vanniktech.maven.publish'
 }
 
@@ -23,12 +23,6 @@ android {
         sourceCompatibility deps.build.javaVersion
         targetCompatibility deps.build.javaVersion
     }
-}
-
-dokka {
-  outputFormat = 'gfm'
-  outputDirectory = "$rootDir/docs/0.x"
-  sourceDirs = android.sourceSets.main.java.srcDirs
 }
 
 dependencies {
