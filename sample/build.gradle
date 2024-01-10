@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'com.google.protobuf'
     id 'com.diffplug.gradle.spotless'
-    id 'org.jetbrains.dokka'
 }
 
 android {

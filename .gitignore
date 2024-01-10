@@ -7,3 +7,10 @@ protosimplestore/test
 /build
 /captures
 .externalNativeBuild
+
+# Mkdocs
+docs/0.x/*
+docs/changelog.md
+docs/code-of-conduct.md
+docs/contributing.md
+docs/index.md

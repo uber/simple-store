@@ -1,4 +1,6 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
+import org.jetbrains.dokka.gradle.DokkaTaskPartial
+
 buildscript {
     apply from: rootProject.file('gradle/dependencies.gradle')
     repositories {
@@ -18,7 +20,15 @@ buildscript {
     }
 }
 
+apply plugin: 'org.jetbrains.dokka'
+
+tasks.dokkaHtmlMultiModule {
+    outputDirectory.set(new File(rootDir,"docs/0.x"))
+    includes.from(project.layout.projectDirectory.file("README.md"))
+}
+
 subprojects {
+    var isSample = project.name == "sample"
     repositories {
         google()
         mavenCentral()
@@ -26,7 +36,6 @@ subprojects {
 
     apply from: rootProject.file('gradle/dependencies.gradle')
     apply plugin: 'com.diffplug.gradle.spotless'
-    apply plugin: 'org.jetbrains.dokka'
     spotless {
         format 'misc', {
             target '**/*.md', '**/.gitignore'
@@ -65,6 +74,15 @@ subprojects {
             treatGeneratedAsUnannotated = true
         }
         options.errorprone.disableWarningsInGeneratedCode = true
+    }
+
+    if (!isSample) {
+        apply plugin: 'org.jetbrains.dokka'
+        tasks.withType(DokkaTaskPartial).configureEach {
+            outputDirectory.set(new File(buildDir, "docs/partial"))
+            moduleName.set(project.property("POM_ARTIFACT_ID").toString())
+            moduleVersion.set(project.property("VERSION_NAME").toString())
+        }
     }
 }
 

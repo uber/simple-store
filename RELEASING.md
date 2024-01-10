@@ -12,3 +12,4 @@ Releasing
  9. Visit [Sonatype Nexus](https://oss.sonatype.org/) and promote the artifact.
      - Select the artifact, click `close`, wait for it to close, then select again and click 
      `release`.
+10. Deploy the updated website with the new docs. This can be done by running the script `./deploy_website.sh`
