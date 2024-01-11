@@ -24,6 +24,8 @@ if ! [[ ${local} ]]; then
 
   # Move working directory into temp folder
   cd ${DIR}
+  # Fetch for gh-deploy
+  git fetch origin gh-pages:gh-pages
 
   # Generate the API docs
   ./gradlew dokkaHtmlMultiModule --no-configuration-cache
