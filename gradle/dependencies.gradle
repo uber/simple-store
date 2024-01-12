@@ -43,7 +43,7 @@ def build = [
                 protobuf  : '0.8.12',
                 spotless  : '4.3.0',
                 mavenPublish : '0.22.0',
-                dokka     : '0.9.18',
+                dokka     : '1.9.10',
         ]
 ]
 
