@@ -35,10 +35,9 @@ markdown_extensions:
 nav:
   - 'Overview': index.md
   - '0.X API':
-    - 'SimpleStore': 0.x/simplestore/index.md
-    - 'SimpleStore for Protocol Buffers': 0.x/protosimplestore/index.md
-    - 'Testing SimpleStore': 0.x/testing/index.md
-    - 'Sample App': 0.x/sample/index.md
+    - 'SimpleStore': 0.x/simplestore/index.html
+    - 'SimpleStore for Protocol Buffers': 0.x/protosimplestore/index.html
+    - 'Testing SimpleStore': 0.x/testing/index.html
   - 'Changelog' : changelog.md
   - 'Contributing': contributing.md
   - 'Code of Conduct': code-of-conduct.md

@@ -1,4 +1,6 @@
 import net.ltgt.gradle.errorprone.CheckSeverity
+import org.jetbrains.dokka.gradle.DokkaTaskPartial
+
 buildscript {
     apply from: rootProject.file('gradle/dependencies.gradle')
     repositories {
@@ -15,11 +17,18 @@ buildscript {
         classpath "com.google.protobuf:protobuf-gradle-plugin:${deps.build.gradlePlugins.protobuf}"
         classpath "com.vanniktech:gradle-maven-publish-plugin:${deps.build.gradlePlugins.mavenPublish}"
         classpath "org.jetbrains.dokka:dokka-gradle-plugin:${deps.build.gradlePlugins.dokka}"
-        classpath "org.jetbrains.dokka:dokka-android-gradle-plugin:${deps.build.gradlePlugins.dokka}"
     }
 }
 
+apply plugin: 'org.jetbrains.dokka'
+
+tasks.dokkaHtmlMultiModule {
+    outputDirectory.set(new File(rootDir,"docs/0.x"))
+    includes.from(project.layout.projectDirectory.file("README.md"))
+}
+
 subprojects {
+    var isSample = project.name == "sample"
     repositories {
         google()
         mavenCentral()
@@ -27,7 +36,6 @@ subprojects {
 
     apply from: rootProject.file('gradle/dependencies.gradle')
     apply plugin: 'com.diffplug.gradle.spotless'
-    apply plugin: 'org.jetbrains.dokka-android'
     spotless {
         format 'misc', {
             target '**/*.md', '**/.gitignore'
@@ -67,6 +75,15 @@ subprojects {
         }
         options.errorprone.disableWarningsInGeneratedCode = true
     }
+
+    if (!isSample) {
+        apply plugin: 'org.jetbrains.dokka'
+        tasks.withType(DokkaTaskPartial).configureEach {
+            outputDirectory.set(new File(buildDir, "docs/partial"))
+            moduleName.set(project.property("POM_ARTIFACT_ID").toString())
+            moduleVersion.set(project.property("VERSION_NAME").toString())
+        }
+    }
 }
 
 task clean(type: Delete) {
@@ -74,4 +91,3 @@ task clean(type: Delete) {
 }
 
 apply from: 'gradle/dependencies.gradle'
-apply from: 'gradle/publish-docs.gradle'

@@ -3,7 +3,6 @@ plugins {
     id 'kotlin-android'
     id 'com.google.protobuf'
     id 'com.diffplug.gradle.spotless'
-    id 'org.jetbrains.dokka-android'
 }
 
 android {
@@ -34,12 +33,6 @@ protobuf {
             }
         }
     }
-}
-
-dokka {
-  outputFormat = 'gfm'
-  outputDirectory = "$rootDir/docs/0.x"
-  sourceDirs = android.sourceSets.main.java.srcDirs
 }
 
 dependencies {
