@@ -1,6 +1,15 @@
 Changelog
 =========
 
+Version 0.0.9
+----------------------------
+* Remove Context from SimpleStore constructor
+* Update AtomicFile implementation
+* Prepare for Kotlin support
+* Update dependencies: appcompat, guavaAndroid, kotlin, protoLite
+* Update tooling
+
+
 Version 0.0.8
 ----------------------------
 * Upgrade to latest protolite runtime.
