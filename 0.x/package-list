@@ -1,0 +1,13 @@
+$dokka.format:html-v1
+$dokka.linkExtension:html
+
+module:simplestore-proto
+com.uber.simplestore.proto
+com.uber.simplestore.proto.impl
+module:simplestore
+com.uber.simplestore
+com.uber.simplestore.executors
+com.uber.simplestore.impl
+com.uber.simplestore.primitive
+module:simplestore-testing
+com.uber.simplestore.fakes

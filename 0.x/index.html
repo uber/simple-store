@@ -1,11 +1,150 @@
-<!DOCTYPE html>
-<html><head><title>com.uber.simplestore</title></head>
-<body>
-<h1>com.uber.simplestore</h1>
-<ul>
-<li><a href="simplestore">simplestore</li>
-<li><a href="simplestore-proto">simplestore-proto</li>
-<li><a href="simplestore-testing">simplestore-testing</li>
-</ul>
-</body>
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" charset="UTF-8">
+    <title>All modules</title>
+<link href="images/logo-icon.svg" rel="icon" type="image/svg"><script>var pathToRoot = "";</script>    <script>const storage = localStorage.getItem("dokka-dark-mode")
+const savedDarkMode = storage ? JSON.parse(storage) : false
+if(savedDarkMode === true){
+    document.getElementsByTagName("html")[0].classList.add("theme-dark")
+}</script>
+<script type="text/javascript" src="scripts/sourceset_dependencies.js" async="async"></script><link href="styles/style.css" rel="Stylesheet"><link href="styles/jetbrains-mono.css" rel="Stylesheet"><link href="styles/main.css" rel="Stylesheet"><link href="styles/prism.css" rel="Stylesheet"><link href="styles/logo-styles.css" rel="Stylesheet"><script type="text/javascript" src="scripts/clipboard.js" async="async"></script><script type="text/javascript" src="scripts/navigation-loader.js" async="async"></script><script type="text/javascript" src="scripts/platform-content-handler.js" async="async"></script><script type="text/javascript" src="scripts/main.js" defer="defer"></script><script type="text/javascript" src="scripts/prism.js" async="async"></script>  </head>
+  <body>
+    <div class="navigation-wrapper" id="navigation-wrapper">
+      <div id="leftToggler"><span class="icon-toggler"></span></div>
+      <div class="library-name"><a href="index.html">temp-clone</a></div>
+      <div></div>
+      <div class="pull-right d-flex"><button id="theme-toggle-button"><span id="theme-toggle"></span></button>
+        <div id="searchBar"></div>
+      </div>
+    </div>
+    <div id="container">
+      <div id="leftColumn">
+        <div id="sideMenu"></div>
+      </div>
+      <div id="main">
+        <div class="main-content" id="content" pageIds="temp-clone::.ext/allModules///PointingToDeclaration//0">
+          <div class="breadcrumbs"></div>
+          <div class="cover ">
+            <div class="cover ">
+              <h1 class="">Simple Store</h1>
+              <p class="paragraph"><a href="https://bestpractices.coreinfrastructure.org/projects/3000"></a><a href="https://search.maven.org/artifact/com.uber.simplestore/simplestore"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.uber.simplestore/simplestore.svg"></a><a href="https://search.maven.org/artifact/com.uber.simplestore/simplestore-proto"><img alt="Maven Central" src="https://img.shields.io/maven-central/v/com.uber.simplestore/simplestore-proto.svg"></a></p>
+              <p class="paragraph">This project is stable and being incubated for long-term support.</p>
+              <p class="paragraph">Simple yet performant asynchronous file storage for Android.</p>
+              <p class="paragraph">SimpleStore aims to provide developers an extremely robust and performant solution for storing key-value data on disk asynchronously. It is built using only Android and Java primitives and avoids taking on external dependencies making it ideal for critical startup storage. It has no opinion on how data is serialized, only storing <code class="lang-kotlin">string</code>-<code class="lang-kotlin">byte[]</code> pairs of small to moderate size. The core library only exposes a thread-safe, executor-explicit async API ensuring clear thread selection and no UI jank.</p>
+              <p class="paragraph">All values are stored on disk as plain files that are “namespaced” in a matching on-disk folder structure. The library also supports configuring a namespace to store data on a cache or transient partition.</p>
+              <h2 class=""> Basic usage</h2>
+              <p class="paragraph">To include in a gradle project, add to your dependencies:</p>
+              <div class="sample-container">
+                <pre><code class="block lang-groovy" theme="idea">dependencies {<br>    implementation 'com.uber.simplestore:simplestore:0.0.9'<br>    // If using protocol buffers, also add:<br>    implementation 'com.uber.simplestore:simplestore-proto:0.0.9'<br>}</code></pre>
+<span class="top-right-position"><span class="copy-icon"></span>
+                  <div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div>
+                </span></div>
+              <p class="paragraph">Out of the box, SimpleStore uses <code class="lang-kotlin">ListenableFuture</code> to store <code class="lang-kotlin">byte[]</code>, <code class="lang-kotlin">String</code>, primitives and protocol buffers on internal storage. </p>
+              <div class="sample-container">
+                <pre><code class="block lang-java" theme="idea">SimpleStore simpleStore = SimpleStoreFactory.create(this, &quot;&lt;some-uuid-or-name&gt;&quot;);<br>ListenableFuture&lt;String&gt; put = simpleStore.putString(&quot;some_key&quot;, &quot;Foo value&quot;);<br>Futures.addCallback(<br>        put,<br>        new FutureCallback&lt;String&gt;() {<br>          @Override<br>          public void onSuccess(@NonNull String s) {<br><br>          }<br><br>          @Override<br>          public void onFailure(@NonNull Throwable t) {<br>            Log.e(&quot;MyActivity&quot;, &quot;Save failure&quot;, t);<br>          }<br>        },<br>        mainExecutor());<br>simpleStore.close();</code></pre>
+<span class="top-right-position"><span class="copy-icon"></span>
+                  <div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div>
+                </span></div>
+              <p class="paragraph">Note that if you use RxJava, Rx comes with a <code class="lang-kotlin">fromFuture</code> method that allows you to wrap <code class="lang-kotlin">ListenableFuture</code>:</p>
+              <div class="sample-container">
+                <pre><code class="block lang-java" theme="idea">Single&lt;String&gt; value = Single.fromFuture(simpleStore.getString(&quot;some_key&quot;));</code></pre>
+<span class="top-right-position"><span class="copy-icon"></span>
+                  <div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div>
+                </span></div>
+              <h2 class=""> Fundamentally Async</h2>
+              <p class="paragraph">IO operations are fundamentally async, and any storage solution should be async all the way through.</p>
+              <p class="paragraph">The implementation is written using async work queues. This allows us to implement under-the-hood optimizations that do not block consumers such as prefetching and pruning old cached values.</p>
+              <p class="paragraph"><code class="lang-kotlin">Futures.get</code> from Guava is available for consumers who wish to run synchronously.</p>
+              <h2 class=""> Interface</h2>
+              <p class="paragraph">Only one interface is exposed for general use. Implementations of the interface provide a factory method for instantiating any variations.</p>
+              <p class="paragraph">Usage:</p>
+              <div class="sample-container">
+                <pre><code class="block lang-java" theme="idea">SimpleStore store = SimpleStoreFactory.create(context, “feature/mystuff”, NamespaceConfig.DEFAULT);<br>ListenableFuture&lt;String&gt; value = store.putString(&quot;some_key&quot;, value);</code></pre>
+<span class="top-right-position"><span class="copy-icon"></span>
+                  <div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div>
+                </span></div>
+              <p class="paragraph">The interface is designed to allow composition with higher level wrappers such as a protocol buffers, Rx, or ListenableFuture transforms. </p>
+              <p class="paragraph">ListenableFuture was chosen over Rx for the implementation as: </p>
+              <ul>
+                <li>
+                  <p class="paragraph">Future transformations require explicit assignment to an Executor, making it difficult to accidentally perform IO operations in the incorrect pool. </p>
+                </li>
+                <li>
+                  <p class="paragraph">Executors do not suffer from the round-robin scheduler design of Rx, making deadlock between IO work impossible.</p>
+                </li>
+                <li>
+                  <p class="paragraph">AndroidX and most Google libraries already ship ListenableFuture and associated Guava classes with them, so most Android apps can take on ListenableFuture without increasing binary size.</p>
+                </li>
+                <li>
+                  <p class="paragraph">Interop with Futures is built into Rx via <code class="lang-kotlin">Observables.fromFuture</code>.</p>
+                </li>
+              </ul>
+              <p class="paragraph">The base interface and implementation purposely leave out a synchronous API as disk IO is fundamentally async. A safe-ish synchronous API can be obtained via <code class="lang-kotlin">Futures#getChecked</code> if absolutely needed for compatibility reasons, but most users who think they need sync will probably find the Futures helpers adequate for their needs.</p>
+              <h2 class=""> Closing a namespace</h2>
+              <p class="paragraph">SimpleStore is closable per namespace, and may only have one open instance per namespace process-wide. When a namespace is closed, the in-memory cache is destroyed. The store will deliver failures to all pending callbacks when closed. This ensures that the consumer is always notified if data does not make it to disk and can handle the failure appropriately such as logging a non-fatal. Any reads or writes attempted on the store after closure will result in an exception.</p>
+              <p class="paragraph">In the future, we can arbitrarily clear portions of the memory cache of an open namespace when desired such as when the OS informs of a trim level. Since the API is fully async, consumers will not be janked and will just see original load latencies.</p>
+              <h2 class=""> Threading</h2>
+              <p class="paragraph">All operations are guaranteed to be executed in-order within the same namespace. A singular cached thread pool backs all stores process wide, and can be replaced with a custom executor via a static configuration method. It is safe to enqueue any operation from any thread, including the main thread. All future callbacks are paired with an executor to be run on, this forces parsing or other processing actions to get out of the way of ordered disk I/O.</p>
+              <p class="paragraph">This model makes deadlock across namespaces impossible, as even a blockingGet cannot be issued on the ordered IO executor. Adopting this model leaves us room to experiment later with using explicit thread priority for different namespaces.</p>
+              <h2 class=""> License</h2>
+              <div class="sample-container">
+                <pre><code class="block lang-kotlin" theme="idea">    Copyright (C) 2020 Uber Technologies
+
+    Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+    you may not use this file except in compliance with the License.
+    You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+    Unless required by applicable law or agreed to in writing, software
+    distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+    WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+    See the License for the specific language governing permissions and
+    limitations under the License.</code></pre>
+<span class="top-right-position"><span class="copy-icon"></span>
+                  <div class="copy-popup-wrapper popup-to-left"><span class="copy-popup-icon"></span><span>Content copied to clipboard</span></div>
+                </span></div>
+            </div>
+            <h2 class="">All modules:</h2>
+            <div class="table"><a data-name="-1529180162%2FMain%2F0" anchor-label="simplestore" id="-1529180162%2FMain%2F0" data-filterable-set=""></a>
+              <div class="table-row">
+                <div class="main-subrow ">
+                  <div class="w-100"><span class="inline-flex">
+                      <div><a href="simplestore/index.html">simplestore</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-1529180162%2FMain%2F0"></span>
+                        <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                      </span></span></div>
+                  <div><span class="brief-comment"></span></div>
+                </div>
+              </div>
+<a data-name="-552853309%2FMain%2F0" anchor-label="simplestore-proto" id="-552853309%2FMain%2F0" data-filterable-set=""></a>
+              <div class="table-row">
+                <div class="main-subrow ">
+                  <div class="w-100"><span class="inline-flex">
+                      <div><a href="protosimplestore/index.html">simplestore-proto</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-552853309%2FMain%2F0"></span>
+                        <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                      </span></span></div>
+                  <div><span class="brief-comment"></span></div>
+                </div>
+              </div>
+<a data-name="-339427557%2FMain%2F0" anchor-label="simplestore-testing" id="-339427557%2FMain%2F0" data-filterable-set=""></a>
+              <div class="table-row">
+                <div class="main-subrow ">
+                  <div class="w-100"><span class="inline-flex">
+                      <div><a href="testing/index.html">simplestore-testing</a></div>
+<span class="anchor-wrapper"><span class="anchor-icon" pointing-to="-339427557%2FMain%2F0"></span>
+                        <div class="copy-popup-wrapper "><span class="copy-popup-icon"></span><span>Link copied to clipboard</span></div>
+                      </span></span></div>
+                  <div><span class="brief-comment"></span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="footer"><span class="go-to-top-icon"><a href="#content" id="go-to-top-link"></a></span><span>© 2024 Copyright</span><span class="pull-right"><span>Generated by </span><a href="https://github.com/Kotlin/dokka"><span>dokka</span><span class="padded-icon"></span></a></span></div>
+      </div>
+    </div>
+  </body>
 </html>
+
