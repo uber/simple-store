@@ -52,11 +52,12 @@ def androidx = [
 ]
 
 def test = [
+        concurrentunit      : 'net.jodah:concurrentunit:0.4.6',
         junit      : 'junit:junit:4.13.1',
         junitX     : 'androidx.test.ext:junit:1.0.0',
         truth      : 'com.google.truth:truth:1.1',
         truthX   : 'androidx.test.ext:truth:1.5.0',
-        robolectric: 'org.robolectric:robolectric:4.4',
+        robolectric: 'org.robolectric:robolectric:4.5.1',
         espresso   : 'androidx.test.espresso:espresso-core:3.5.1',
         runner     : 'androidx.test:runner:1.5.2',
         rules      : 'androidx.test:rules:1.5.0',
