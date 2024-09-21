@@ -1,44 +1,38 @@
 plugins {
-    id 'com.android.application'
-    id 'kotlin-android'
-    id 'com.google.protobuf'
-    id 'com.diffplug.gradle.spotless'
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    id("protobuf-convention")
+    id("spotless-convention")
 }
 
 android {
-    buildToolsVersion deps.build.buildToolsVersion
-    compileSdkVersion deps.build.compileSdkVersion
+    namespace 'com.uber.simplestore.sample'
+    compileSdk 34
 
     defaultConfig {
-        minSdkVersion deps.build.minSdkVersion
-        targetSdkVersion deps.build.targetSdkVersion
+        minSdkVersion 21
+        targetSdkVersion 34
     }
 
     compileOptions {
-        sourceCompatibility deps.build.javaVersion
-        targetCompatibility deps.build.javaVersion
+        sourceCompatibility JavaVersion.VERSION_11
+        targetCompatibility JavaVersion.VERSION_11
+    }
+
+    kotlinOptions {
+        jvmTarget = '11'
     }
 }
 
-protobuf {
-    protoc {
-        artifact = "com.google.protobuf:protoc:${deps.external.protoc}"
-    }
-    generateProtoTasks {
-        all().each { task ->
-            task.builtins {
-                java {
-                    option 'lite'
-                }
-            }
-        }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
 
 dependencies {
-    implementation deps.androidx.appCompat
-    implementation deps.external.protoLite
-    implementation deps.kotlin.stdLibJdk8
+    implementation libs.androidx.appcompat
+    implementation libs.protobuf.javalite
 
     implementation project(":simplestore")
     implementation project(":protosimplestore")

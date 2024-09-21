@@ -1,29 +1,35 @@
 pluginManagement {
-    apply from: file('gradle/dependencies.gradle')
-    resolutionStrategy {
-        eachPlugin {
-            switch (requested.id.id) {
-                case 'net.ltgt.errorprone':
-                    useVersion(deps.build.gradlePlugins.errorProne)
-                    break
-                case 'net.ltgt.nullaway':
-                    useVersion(deps.build.gradlePlugins.nullAway)
-                    break
+    repositories {
+        google {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
+                includeGroupByRegex("androidx.*")
             }
         }
-    }
-    repositories {
-        mavenCentral()
-        google()
-        gradlePluginPortal()
-    }
-}
-dependencyResolutionManagement {
-    repositories {
-        google()
         mavenCentral()
         gradlePluginPortal()
     }
 }
 
+plugins {
+    // Provides repository for downloading JDKs. Used by JVM toolchain gradle config.
+    id 'org.gradle.toolchains.foojay-resolver-convention' version '0.8.0'
+}
+
+dependencyResolutionManagement {
+    repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+    repositories {
+        google()
+        mavenCentral()
+        gradlePluginPortal()
+    }
+    versionCatalogs {
+        testLibs {
+            from(files("gradle/test-libs.versions.toml"))
+        }
+    }
+}
+
+includeBuild 'conventions'
 include ':simplestore', ':protosimplestore', ':testing', ':sample'

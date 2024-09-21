@@ -24,7 +24,6 @@ import java.nio.charset.Charset;
 import java.util.HashMap;
 import javax.annotation.Nullable;
 
-@SuppressWarnings("UnstableApiUsage")
 public final class FakeSimpleStore implements SimpleStore {
 
   private boolean closed = false;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020. Uber Technologies
+ * Copyright (C) 2024. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.simplestore.impl;
+import org.gradle.accessors.dm.LibrariesForLibs
 
-import android.content.Context;
-import com.uber.simplestore.DirectoryProvider;
-import java.io.File;
+plugins {
+    id("com.google.protobuf")
+}
 
-public class AndroidDirectoryProvider implements DirectoryProvider {
+val libs = the<LibrariesForLibs>()
 
-  private final Context context;
-
-  public AndroidDirectoryProvider(Context context) {
-    this.context = context;
-  }
-
-  @Override
-  public File cacheDirectoryPath() {
-    return context.getCacheDir();
-  }
-
-  @Override
-  public File filesDirectoryPath() {
-    return context.getFilesDir();
-  }
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:${libs.versions.protobuf.get()}"
+    }
+    generateProtoTasks {
+        all().forEach { task ->
+            task.builtins {
+                create("java") {
+                    option("lite")
+                }
+            }
+        }
+    }
 }

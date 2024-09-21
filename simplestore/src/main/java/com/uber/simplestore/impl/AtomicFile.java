@@ -177,18 +177,13 @@ final class AtomicFile {
    * array which is returned.
    */
   public byte[] readFully() throws IOException {
-    FileInputStream stream = openRead();
-    try {
+    try (FileInputStream stream = openRead()) {
       int pos = 0;
       int avail = stream.available();
       byte[] data = new byte[avail];
       while (true) {
         int amt = stream.read(data, pos, data.length - pos);
-        // Log.i("foo", "Read " + amt + " bytes at " + pos
-        //        + " of avail " + data.length);
         if (amt <= 0) {
-          // Log.i("foo", "**** FINISHED READING: pos=" + pos
-          //        + " len=" + data.length);
           return data;
         }
         pos += amt;
@@ -199,8 +194,6 @@ final class AtomicFile {
           data = newData;
         }
       }
-    } finally {
-      stream.close();
     }
   }
 

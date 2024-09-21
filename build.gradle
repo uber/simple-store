@@ -1,23 +1,15 @@
-import net.ltgt.gradle.errorprone.CheckSeverity
 import org.jetbrains.dokka.gradle.DokkaTaskPartial
 
-buildscript {
-    apply from: rootProject.file('gradle/dependencies.gradle')
-    repositories {
-        google()
-        mavenCentral()
-        gradlePluginPortal()
-    }
-    dependencies {
-        classpath "com.android.tools.build:gradle:${deps.build.gradlePlugins.android}"
-        classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:${deps.build.gradlePlugins.kotlin}"
-        classpath "net.ltgt.gradle:gradle-errorprone-plugin:${deps.build.gradlePlugins.errorProne}"
-        classpath "net.ltgt.gradle:gradle-nullaway-plugin:${deps.build.gradlePlugins.nullAway}"
-        classpath "com.diffplug.spotless:spotless-plugin-gradle:${deps.build.gradlePlugins.spotless}"
-        classpath "com.google.protobuf:protobuf-gradle-plugin:${deps.build.gradlePlugins.protobuf}"
-        classpath "com.vanniktech:gradle-maven-publish-plugin:${deps.build.gradlePlugins.mavenPublish}"
-        classpath "org.jetbrains.dokka:dokka-gradle-plugin:${deps.build.gradlePlugins.dokka}"
-    }
+plugins {
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.android.library) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.errorprone) apply false
+    alias(libs.plugins.nullaway) apply false
+    alias(libs.plugins.spotless) apply false
+    alias(libs.plugins.protobuf) apply false
+    alias(libs.plugins.gradle.maven.publish) apply false
+    alias(libs.plugins.dokka) apply false
 }
 
 apply plugin: 'org.jetbrains.dokka'
@@ -26,68 +18,3 @@ tasks.dokkaHtmlMultiModule {
     outputDirectory.set(new File(rootDir,"docs/0.x"))
     includes.from(project.layout.projectDirectory.file("README.md"))
 }
-
-subprojects {
-    var isSample = project.name == "sample"
-    repositories {
-        google()
-        mavenCentral()
-    }
-
-    apply from: rootProject.file('gradle/dependencies.gradle')
-    apply plugin: 'com.diffplug.gradle.spotless'
-    spotless {
-        format 'misc', {
-            target '**/*.md', '**/.gitignore'
-
-            indentWithTabs()
-            trimTrailingWhitespace()
-            endWithNewline()
-        }
-        java {
-            target "**/*.java"
-            googleJavaFormat(deps.versions.gjf)
-            licenseHeaderFile rootProject.file('spotless/copyright.java')
-            removeUnusedImports()
-            trimTrailingWhitespace()
-            endWithNewline()
-        }
-        groovyGradle {
-            target '**/*.gradle'
-            trimTrailingWhitespace()
-            endWithNewline()
-        }
-    }
-
-    apply plugin: 'net.ltgt.errorprone'
-    apply plugin: 'net.ltgt.nullaway'
-    dependencies {
-        errorproneJavac deps.build.errorProneJavac
-        errorprone deps.build.nullAway
-        errorprone deps.build.errorProne
-    }
-    tasks.withType(JavaCompile).configureEach {
-        options.errorprone.nullaway {
-            severity = CheckSeverity.ERROR
-            annotatedPackages.add("com.uber")
-            unannotatedSubPackages.add("com.uber.simplestore.proto")
-            treatGeneratedAsUnannotated = true
-        }
-        options.errorprone.disableWarningsInGeneratedCode = true
-    }
-
-    if (!isSample) {
-        apply plugin: 'org.jetbrains.dokka'
-        tasks.withType(DokkaTaskPartial).configureEach {
-            outputDirectory.set(new File(buildDir, "docs/partial"))
-            moduleName.set(project.property("POM_ARTIFACT_ID").toString())
-            moduleVersion.set(project.property("VERSION_NAME").toString())
-        }
-    }
-}
-
-task clean(type: Delete) {
-    delete rootProject.buildDir
-}
-
-apply from: 'gradle/dependencies.gradle'

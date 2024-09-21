@@ -22,7 +22,6 @@ import com.google.common.util.concurrent.ListenableFuture;
 import com.uber.simplestore.SimpleStore;
 import javax.annotation.Nullable;
 
-@SuppressWarnings("UnstableApiUsage")
 final class PrimitiveSimpleStoreImpl implements PrimitiveSimpleStore {
 
   private final SimpleStore simpleStore;

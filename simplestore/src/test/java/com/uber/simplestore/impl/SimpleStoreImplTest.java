@@ -28,7 +28,6 @@ import com.uber.simplestore.*;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import javax.annotation.Nonnull;
-import org.checkerframework.checker.nullness.compatqual.NullableDecl;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -180,7 +179,7 @@ public final class SimpleStoreImplTest {
           store.put(TEST_KEY, VALUE_TWO),
           new FutureCallback<byte[]>() {
             @Override
-            public void onSuccess(@NullableDecl byte[] result) {
+            public void onSuccess(byte[] result) {
               assertThat(result).isEqualTo(VALUE_TWO);
             }
 
@@ -194,7 +193,7 @@ public final class SimpleStoreImplTest {
           store.get(TEST_KEY),
           new FutureCallback<byte[]>() {
             @Override
-            public void onSuccess(@NullableDecl byte[] result) {
+            public void onSuccess(byte[] result) {
               assertThat(result).isEqualTo(VALUE_TWO);
             }
 
@@ -255,8 +254,8 @@ public final class SimpleStoreImplTest {
     try (SimpleStore ignoredOuter = SimpleStoreFactory.create(directoryProvider, "")) {
       try (SimpleStore ignored =
           SimpleStoreFactory.create(directoryProvider, someNamespace, NamespaceConfig.DEFAULT)) {
-        try {
-          SimpleStoreFactory.create(directoryProvider, someNamespace, NamespaceConfig.DEFAULT);
+        try (SimpleStore ignored2 =
+            SimpleStoreFactory.create(directoryProvider, someNamespace, NamespaceConfig.DEFAULT)) {
           fail();
         } catch (IllegalStateException e) {
           // expected.
