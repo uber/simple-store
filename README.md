@@ -84,6 +84,27 @@ SimpleStore is closable per namespace, and may only have one open instance per n
 
 In the future, we can arbitrarily clear portions of the memory cache of an open namespace when desired such as when the OS informs of a trim level. Since the API is fully async, consumers will not be janked and will just see original load latencies.
 
+## Namespaces in Programming
+
+Why Do Namespaces Exist?
+Namespaces are essential for organizing and managing code effectively. Here’s a brief overview of their benefits:
+
+Avoid Naming Conflicts: Prevents clashes between identifiers by allowing the same name in different contexts (e.g., Database::connect()  vs. User::connect()).
+
+Code Organization: Groups related functions and classes, making it easier to navigate the codebase.
+
+Improved Readability: Provides context about the purpose of functions and classes, enhancing code clarity 
+(e.g., Graphics::drawCircle()).
+
+Modular Development: Supports separation of code into logical units, simplifying dependency management.
+
+Encapsulation: Hides implementation details while exposing only necessary components, leading to cleaner interfaces.
+
+Reusability: Facilitates the creation of reusable libraries or modules across different projects.
+
+Conclusion :
+Namespaces enhance code organization, readability, and maintainability, making them a vital feature in programming.
+
 ## Threading
 
 All operations are guaranteed to be executed in-order within the same namespace. A singular cached thread pool backs all stores process wide, and can be replaced with a custom executor via a static configuration method. It is safe to enqueue any operation from any thread, including the main thread. All future callbacks are paired with an executor to be run on, this forces parsing or other processing actions to get out of the way of ordered disk I/O.
