@@ -40,7 +40,7 @@ public final class SimpleStoreFactory {
   private static final Object namespacesLock = new Object();
 
   @GuardedBy("namespacesLock")
-  private static Map<String, SimpleStoreImpl> namespaces = new HashMap<>();
+  private static final Map<String, SimpleStoreImpl> namespaces = new HashMap<>();
 
   /**
    * Obtain a store for a namespace with default configuration.
@@ -82,6 +82,7 @@ public final class SimpleStoreFactory {
   static void tombstone(SimpleStoreImpl store) {
     synchronized (namespacesLock) {
       if (store.tombstone()) {
+        //noinspection resource
         namespaces.remove(store.getNamespace());
       }
     }

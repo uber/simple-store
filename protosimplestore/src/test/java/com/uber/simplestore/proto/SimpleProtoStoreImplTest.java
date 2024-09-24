@@ -35,13 +35,12 @@ import org.robolectric.RobolectricTestRunner;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
-@SuppressWarnings("UnstableApiUsage")
 @RunWith(RobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class SimpleProtoStoreImplTest {
   private static final String TEST_KEY = "test";
   private static final String FOO = "foo";
-  private Context context = RuntimeEnvironment.systemContext;
+  private final Context context = RuntimeEnvironment.getApplication();
   private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @Test
@@ -54,7 +53,7 @@ public class SimpleProtoStoreImplTest {
   }
 
   @Test
-  public void defaultInstanceWhenEmpty_withRequiredField() throws Exception {
+  public void defaultInstanceWhenEmpty_withRequiredField() {
     try (SimpleProtoStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
       ListenableFuture<TestProto.Required> future =
           store.get(TEST_KEY, TestProto.Required.parser());
@@ -111,8 +110,8 @@ public class SimpleProtoStoreImplTest {
 
   @Test
   public void whenCache_returnsDefaultOnParseFailure() throws Exception {
-    try (SimpleStore simpleStore = SimpleProtoStoreFactory.create(directoryProvider, "")) {
-      simpleStore.put(TEST_KEY, "garbage".getBytes(Charset.defaultCharset())).get();
+    try (SimpleStore store = SimpleProtoStoreFactory.create(directoryProvider, "")) {
+      store.put(TEST_KEY, "garbage".getBytes(Charset.defaultCharset())).get();
     }
 
     try (SimpleProtoStore store =

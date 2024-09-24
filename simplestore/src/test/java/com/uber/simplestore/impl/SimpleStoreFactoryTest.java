@@ -28,7 +28,7 @@ import org.robolectric.RuntimeEnvironment;
 @RunWith(RobolectricTestRunner.class)
 public final class SimpleStoreFactoryTest {
 
-  private final Context context = RuntimeEnvironment.systemContext;
+  private final Context context = RuntimeEnvironment.getApplication();
   private final DirectoryProvider directoryProvider = new AndroidDirectoryProvider(context);
 
   @Test

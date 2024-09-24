@@ -24,6 +24,7 @@ import androidx.annotation.Nullable;
 import androidx.test.platform.app.InstrumentationRegistry;
 import java.io.*;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
 import org.junit.After;
@@ -51,7 +52,7 @@ public class AtomicFileTest {
     READ_FINISH
   }
 
-  private static final Charset UTF_8 = Charset.forName("UTF-8");
+  private static final Charset UTF_8 = StandardCharsets.UTF_8;
   private static final byte[] BASE_BYTES = "base".getBytes(UTF_8);
   private static final byte[] EXISTING_NEW_BYTES = "unnew".getBytes(UTF_8);
   private static final byte[] NEW_BYTES = "new".getBytes(UTF_8);
@@ -335,14 +336,7 @@ public class AtomicFileTest {
             break;
           case READ_FINISH:
             // We are only using this action when there is no base file.
-            assertThrows(
-                FileNotFoundException.class,
-                new ThrowingRunnable() {
-                  @Override
-                  public void run() throws Throwable {
-                    atomicFile.openRead();
-                  }
-                });
+            assertThrows(FileNotFoundException.class, atomicFile::openRead);
             atomicFile.finishWrite(outputStream);
             break;
           default:
@@ -356,14 +350,7 @@ public class AtomicFileTest {
         assertArrayEquals(mExpectedBytes, readAllBytes(inputStream));
       }
     } else {
-      assertThrows(
-          FileNotFoundException.class,
-          new ThrowingRunnable() {
-            @Override
-            public void run() throws Throwable {
-              atomicFile.openRead();
-            }
-          });
+      assertThrows(FileNotFoundException.class, atomicFile::openRead);
     }
   }
 
@@ -408,22 +395,5 @@ public class AtomicFileTest {
 
   private interface ThrowingRunnable {
     void run() throws Throwable;
-  }
-
-  // JUnit on API 17 somehow turns null parameters into the string "null". Wrapping the parameters
-  // inside a class solves this problem.
-  private static class Parameters {
-    @Nullable public String[] existingFileNames;
-    @Nullable public WriteAction writeAction;
-    @Nullable public byte[] expectedBytes;
-
-    Parameters(
-        @Nullable String[] existingFileNames,
-        @Nullable WriteAction writeAction,
-        @Nullable byte[] expectedBytes) {
-      this.existingFileNames = existingFileNames;
-      this.writeAction = writeAction;
-      this.expectedBytes = expectedBytes;
-    }
   }
 }

@@ -36,7 +36,6 @@ import com.uber.simplestore.proto.SimpleProtoStore;
 import com.uber.simplestore.proto.impl.SimpleProtoStoreFactory;
 
 /** Store and retrieve a text field. */
-@SuppressWarnings("UnstableApiUsage")
 public class JavaActivity extends AppCompatActivity {
 
   private static final String NAMESPACE_EXTRA = "namespace";
@@ -92,7 +91,7 @@ public class JavaActivity extends AppCompatActivity {
     DirectoryProvider directoryProvider = new AndroidDirectoryProvider(this);
     simpleStore =
         SimpleProtoStoreFactory.create(
-            directoryProvider, "main" + nesting.toString(), NamespaceConfig.DEFAULT);
+            directoryProvider, "main" + nesting, NamespaceConfig.DEFAULT);
     loadMessage();
   }
 

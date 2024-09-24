@@ -30,17 +30,19 @@ public class FakeUnitTest {
 
   @Test
   public void saves() throws Exception {
-    SimpleStore store = new FakeSimpleStore();
-    store.putString(TEST_KEY, "bar").get();
-    assertThat(store.getString(TEST_KEY).get()).isEqualTo("bar");
+    try (SimpleStore store = new FakeSimpleStore()) {
+      store.putString(TEST_KEY, "bar").get();
+      assertThat(store.getString(TEST_KEY).get()).isEqualTo("bar");
+    }
   }
 
   @Test
   public void nullClears() throws Exception {
-    SimpleStore store = new FakeSimpleStore();
-    store.putString(TEST_KEY, "bar").get();
-    store.put(TEST_KEY, null).get();
-    assertThat(store.contains(TEST_KEY).get()).isFalse();
+    try (SimpleStore store = new FakeSimpleStore()) {
+      store.putString(TEST_KEY, "bar").get();
+      store.put(TEST_KEY, null).get();
+      assertThat(store.contains(TEST_KEY).get()).isFalse();
+    }
   }
 
   @Test
@@ -55,14 +57,15 @@ public class FakeUnitTest {
 
   @Test
   public void handlesAbsence() throws Exception {
-    SimpleStore store = new FakeSimpleStore();
-    assertThat(store.getString(TEST_KEY).get()).isEqualTo("");
-    assertThat(store.get(TEST_KEY).get()).hasLength(0);
-    assertThat(store.contains(TEST_KEY).get()).isFalse();
+    try (SimpleStore store = new FakeSimpleStore()) {
+      assertThat(store.getString(TEST_KEY).get()).isEqualTo("");
+      assertThat(store.get(TEST_KEY).get()).hasLength(0);
+      assertThat(store.contains(TEST_KEY).get()).isFalse();
+    }
   }
 
   @Test
-  public void throwsAfterClose() throws Exception {
+  public void throwsAfterClose() {
     SimpleStore store = new FakeSimpleStore();
     store.close();
     try {
@@ -74,16 +77,17 @@ public class FakeUnitTest {
   }
 
   @Test
-  public void supportsFailure() throws Exception {
-    FakeSimpleStore store = new FakeSimpleStore();
-    store.setFailureType(new IOException("foo"));
+  public void supportsFailure() {
+    try (FakeSimpleStore store = new FakeSimpleStore()) {
+      store.setFailureType(new IOException("foo"));
 
-    ListenableFuture<String> future = store.getString(TEST_KEY);
-    try {
-      future.get();
-      fail();
-    } catch (Exception e) {
-      assertThat(e).hasCauseThat().isInstanceOf(IOException.class);
+      ListenableFuture<String> future = store.getString(TEST_KEY);
+      try {
+        future.get();
+        fail();
+      } catch (Exception e) {
+        assertThat(e).hasCauseThat().isInstanceOf(IOException.class);
+      }
     }
   }
 }

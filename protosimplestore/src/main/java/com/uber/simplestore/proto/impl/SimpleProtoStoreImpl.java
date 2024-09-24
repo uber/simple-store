@@ -27,7 +27,6 @@ import com.uber.simplestore.SimpleStoreConfig;
 import com.uber.simplestore.proto.SimpleProtoStore;
 import javax.annotation.Nullable;
 
-@SuppressWarnings("UnstableApiUsage")
 public final class SimpleProtoStoreImpl implements SimpleProtoStore {
   private final SimpleStore simpleStore;
   private final NamespaceConfig config;

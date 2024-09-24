@@ -39,7 +39,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.annotation.Nullable;
 
 /** Asynchronous storage implementation. */
-@SuppressWarnings("UnstableApiUsage")
 final class SimpleStoreImpl implements SimpleStore {
   private static final int OPEN = 0;
   private static final int CLOSED = 1;
@@ -50,7 +49,7 @@ final class SimpleStoreImpl implements SimpleStore {
   private final String namespace;
   @Nullable private File namespacedDirectory;
 
-  AtomicInteger available = new AtomicInteger(OPEN);
+  final AtomicInteger available = new AtomicInteger(OPEN);
 
   // Only touch from the serial executor.
   private final Map<String, byte[]> cache = new HashMap<>();
@@ -179,7 +178,7 @@ final class SimpleStoreImpl implements SimpleStore {
           }
           try {
             File[] files = Objects.requireNonNull(namespacedDirectory).listFiles(File::isFile);
-            if (files != null && files.length > 0) {
+            if (files != null) {
               for (File f : files) {
                 //noinspection ResultOfMethodCallIgnored
                 f.delete();

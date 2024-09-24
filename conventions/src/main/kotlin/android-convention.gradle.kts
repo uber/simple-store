@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2020. Uber Technologies
+ * Copyright (C) 2024. Uber Technologies
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,27 +13,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.uber.simplestore.impl;
+plugins {
+    id("com.android.library")
+}
 
-import android.content.Context;
-import com.uber.simplestore.DirectoryProvider;
-import java.io.File;
+android {
+    compileSdk = 34
 
-public class AndroidDirectoryProvider implements DirectoryProvider {
+    defaultConfig {
+        minSdk = 19
+    }
 
-  private final Context context;
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
 
-  public AndroidDirectoryProvider(Context context) {
-    this.context = context;
-  }
-
-  @Override
-  public File cacheDirectoryPath() {
-    return context.getCacheDir();
-  }
-
-  @Override
-  public File filesDirectoryPath() {
-    return context.getFilesDir();
-  }
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
+    }
 }

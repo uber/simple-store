@@ -20,7 +20,6 @@ import com.uber.simplestore.executors.StorageExecutors.mainExecutor as mainExecu
 /**
  * Store and retrieve a text field.
  */
-@Suppress("UnstableApiUsage")
 class KotlinActivity : AppCompatActivity() {
     private lateinit var textView: TextView
     private lateinit var simpleStore: SimpleProtoStore

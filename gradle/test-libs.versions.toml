@@ -1,0 +1,19 @@
+[versions]
+orchestrator = "1.5.0"
+robolectric = "4.13"
+rules = "1.6.1"
+runner = "1.6.2"
+junit = "4.13.2"
+androidxJunit = "1.2.1"
+truth = "1.4.4"
+androidxTruth = "1.6.0"
+
+[libraries]
+truth = { group = "com.google.truth", name = "truth", version.ref = "truth" }
+androidx-truth = { group = "androidx.test.ext", name = "truth", version.ref = "androidxTruth" }
+junit = { group = "junit", name = "junit", version.ref = "junit" }
+androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "androidxJunit" }
+robolectric = { group = "org.robolectric", name = "robolectric", version.ref = "robolectric" }
+androidx-orchestrator = { group = "androidx.test", name = "orchestrator", version.ref = "orchestrator" }
+androidx-rules = { group = "androidx.test", name = "rules", version.ref = "rules" }
+androidx-runner = { group = "androidx.test", name = "runner", version.ref = "runner" }

@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-          xmlns:tools="http://schemas.android.com/tools" package="com.uber.simplestore.sample">
+          xmlns:tools="http://schemas.android.com/tools">
 
     <application
             android:icon="@mipmap/ic_launcher"
@@ -9,7 +9,7 @@
             android:supportsRtl="true"
             android:theme="@style/AppTheme" tools:ignore="GoogleAppIndexingWarning">
         <activity android:name=".JavaActivity"
-            android:label="@string/app_name">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -17,7 +17,8 @@
             </intent-filter>
         </activity>
         <activity android:name=".KotlinActivity"
-            android:label="@string/kotlin_name">
+                android:exported="true"
+                android:label="@string/kotlin_name">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
