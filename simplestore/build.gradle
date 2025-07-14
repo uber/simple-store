@@ -39,6 +39,9 @@ android {
 dependencies {
     implementation deps.external.findBugs
     implementation deps.kotlin.stdLibJdk8
+    implementation deps.kotlin.coroutinesCore
+    implementation deps.kotlin.coroutinesAndroid
+    implementation deps.kotlin.coroutinesGuava
     api deps.external.guavaAndroid
 
     testImplementation deps.test.junit
